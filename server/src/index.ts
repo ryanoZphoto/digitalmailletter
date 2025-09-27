@@ -85,6 +85,67 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
+// Admin auth middleware using ADMIN_TOKEN
+function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const token = process.env.ADMIN_TOKEN || '';
+  if (!token) return res.status(503).json({ error: 'ADMIN_TOKEN not configured' });
+  const header = String(req.headers.authorization || '');
+  const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (provided && provided === token) return next();
+  return res.status(401).json({ error: 'Unauthorized' });
+}
+
+// Admin API: health and jobs management (minimal)
+app.get('/api/admin/health', requireAdmin, async (req, res) => {
+  const { connected } = await init();
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development', dbConnected: connected, time: new Date().toISOString() });
+});
+
+app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
+  const { prisma, connected } = await init();
+  if (connected && prisma) {
+    try {
+      const jobs = await prisma.job.findMany({ orderBy: { createdAt: 'desc' } });
+      return res.json(jobs);
+    } catch {}
+  }
+  return res.json(readJobs());
+});
+
+app.post('/api/admin/jobs/:id/requeue', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const now = new Date().toISOString();
+  const { prisma, connected } = await init();
+  if (connected && prisma) {
+    try {
+      await prisma.job.update({ where: { id }, data: { status: 'submitted' } });
+      return res.json({ ok: true });
+    } catch {}
+  }
+  const jobs = readJobs();
+  const j = jobs.find(j => j.id === id);
+  if (!j) return res.status(404).json({ error: 'Job not found' });
+  j.status = 'submitted';
+  if (!j.tracking) j.tracking = { provider: 'mock', code: 'T' + id.toUpperCase(), events: [] } as any;
+  (j.tracking.events = j.tracking.events || []).push({ at: now, status: 'requeued' });
+  writeJobs(jobs);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { prisma, connected } = await init();
+  if (connected && prisma) {
+    try {
+      await prisma.job.delete({ where: { id } });
+      return res.json({ ok: true });
+    } catch {}
+  }
+  const jobs = readJobs().filter(j => j.id !== id);
+  writeJobs(jobs);
+  res.json({ ok: true });
+});
+
 app.get('/api/config', async (req, res) => {
   const cfg = readConfig();
   if (cfg) return res.json(cfg);
@@ -370,6 +431,49 @@ function getTemplateSubject(templateId: string): string {
 
 
 const PORT = Number(process.env.PORT || 4000);
+
+// Simple admin UI (token prompt) – placed before static/catch-all
+app.get('/admin', (req, res) => {
+  const html = `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin • Digital Mail Letter</title>
+  <style>body{font-family:system-ui,Segoe UI,Arial;margin:0;background:#0b1020;color:#e8ecf8}header{padding:16px 20px;border-bottom:1px solid #243049}main{padding:16px 20px}button{background:#5b7cfa;border:0;color:white;padding:8px 12px;border-radius:6px;cursor:pointer}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #243049;padding:8px 6px;text-align:left}code{background:#111826;padding:2px 6px;border-radius:4px}</style>
+  </head><body>
+  <header><strong>Admin</strong> · <span id="health">loading…</span> <button id="refresh" style="margin-left:10px">Refresh</button></header>
+  <main>
+    <div style="margin:8px 0 16px 0">Token: <input id="token" type="password" placeholder="ADMIN_TOKEN" style="width:260px"> <button id="save">Use Token</button></div>
+    <h3>Jobs</h3>
+    <table><thead><tr><th>Id</th><th>Status</th><th>Template</th><th>Created</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
+    <p style="opacity:.8;margin-top:18px">Tip: Keep this page private. Token is stored in session only.</p>
+  </main>
+  <script>
+  const s = sessionStorage; const $ = sel=>document.querySelector(sel);
+  const getTok = ()=> s.getItem('adm_tok') || '';
+  const setTok = v=> s.setItem('adm_tok', v);
+  async function req(path, opts={}){
+    const r = await fetch(path, { headers: { 'Authorization': 'Bearer ' + getTok(), 'Content-Type': 'application/json' }, ...opts });
+    if(!r.ok){ const t = await r.text(); throw new Error(t) } return await r.json();
+  }
+  async function load(){
+    try{ const h = await req('/api/admin/health'); $('#health').textContent = 'OK • ' + h.env; }catch(e){ $('#health').textContent = 'Unauthorized or down'; }
+    try{ const jobs = await req('/api/admin/jobs'); const tbody = $('#rows'); tbody.innerHTML='';
+      (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td><code>${j.id}</code></td><td>${j.status||''}</td><td>${j.templateId||''}</td><td>${j.createdAt||''}</td><td>
+      <button data-a="requeue" data-id="${j.id}">Requeue</button>
+      <button data-a="delete" data-id="${j.id}" style="background:#ef4444;margin-left:6px">Delete</button></td>`; tbody.appendChild(tr); });
+    }catch(e){ /* ignore */ }
+  }
+  document.addEventListener('click', async (e)=>{
+    const t=e.target; if(!(t instanceof HTMLElement)) return; const a=t.getAttribute('data-a'); const id=t.getAttribute('data-id');
+    if(a==='requeue'){ await req('/api/admin/jobs/'+id+'/requeue', { method:'POST' }); await load(); }
+    if(a==='delete'){ if(confirm('Delete job '+id+'?')){ await req('/api/admin/jobs/'+id, { method:'DELETE' }); await load(); } }
+  });
+  $('#save').onclick = ()=>{ setTok($('#token').value.trim()); load(); };
+  $('#refresh').onclick = load;
+  if(getTok()) $('#token').value = getTok();
+  load();
+  </script></body></html>`;
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+});
 
 // Serve static files from React build (AFTER all API routes)
 const __filename = fileURLToPath(import.meta.url);
