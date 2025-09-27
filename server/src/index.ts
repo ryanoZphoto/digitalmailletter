@@ -391,104 +391,23 @@ function getTemplateSubject(templateId: string): string {
   }
 }
 
-// Small UI to create jobs and view existing ones (development convenience)
-app.get('/ui', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(`<!doctype html><html><head><meta charset="utf-8"><title>Mail My Forms — UI</title></head><body style="font-family:system-ui;padding:20px;">
-    <h1>Mail My Forms — UI (Fixed)</h1>
-    <div style="display:flex;gap:20px;">
-      <div>
-        <h3>📤 Sender</h3>
-        <form id="form">
-          <label>Name <input name="senderName" value="Alice" style="width:200px;margin:4px 0;"></label><br>
-          <label>Address Line 1 <input name="senderLine1" value="123 Main St" style="width:200px;margin:4px 0;"></label><br>
-          <label>Address Line 2 <input name="senderLine2" value="" style="width:200px;margin:4px 0;"></label><br>
-          <label>City <input name="senderCity" value="San Francisco" style="width:200px;margin:4px 0;"></label><br>
-          <label>State <input name="senderState" value="CA" style="width:200px;margin:4px 0;"></label><br>
-          <label>ZIP <input name="senderZip" value="94102" style="width:200px;margin:4px 0;"></label><br>
-          <label>Country <input name="senderCountry" value="US" style="width:200px;margin:4px 0;"></label><br>
-          <br>
-          <h3>📥 Recipient</h3>
-          <label>Name <input name="recipientName" value="Bob" style="width:200px;margin:4px 0;"></label><br>
-          <label>Address Line 1 <input name="recipientLine1" value="456 Market St" style="width:200px;margin:4px 0;"></label><br>
-          <label>Address Line 2 <input name="recipientLine2" value="" style="width:200px;margin:4px 0;"></label><br>
-          <label>City <input name="recipientCity" value="New York" style="width:200px;margin:4px 0;"></label><br>
-          <label>State <input name="recipientState" value="NY" style="width:200px;margin:4px 0;"></label><br>
-          <label>ZIP <input name="recipientZip" value="10001" style="width:200px;margin:4px 0;"></label><br>
-          <label>Country <input name="recipientCountry" value="US" style="width:200px;margin:4px 0;"></label><br>
-          <br>
-          <label>Template ID <input name="templateId" value="tpl-default" style="width:200px;margin:4px 0;"></label><br>
-          <button type="submit" style="background:#007bff;color:white;border:none;padding:8px 16px;margin:8px 0;">📮 Create Letter</button>
-        </form>
-      </div>
-      <div style="flex:1;">
-        <pre id="out" style="white-space:pre-wrap;background:#f5f7fb;padding:12px;border-radius:6px;height:500px;overflow:auto;"></pre>
-      </div>
-    </div>
-    <script>
-      async function refreshJobs(){
-        const r = await fetch('/api/jobs');
-        const j = await r.json(); document.getElementById('out').textContent = JSON.stringify(j, null, 2);
-      }
-      document.getElementById('form').addEventListener('submit', async (e)=>{
-        e.preventDefault(); 
-        const f = new FormData(e.target); 
-        const body = { 
-          sender: {
-            name: f.get('senderName'),
-            address_line1: f.get('senderLine1'),
-            address_line2: f.get('senderLine2') || '',
-            address_city: f.get('senderCity'),
-            address_state: f.get('senderState'),
-            address_zip: f.get('senderZip'),
-            address_country: f.get('senderCountry')
-          }, 
-          recipient: {
-            name: f.get('recipientName'),
-            address_line1: f.get('recipientLine1'),
-            address_line2: f.get('recipientLine2') || '',
-            address_city: f.get('recipientCity'),
-            address_state: f.get('recipientState'),
-            address_zip: f.get('recipientZip'),
-            address_country: f.get('recipientCountry')
-          }, 
-          templateId: f.get('templateId'),
-          serviceLevel: 'first_class'
-        };
-        try {
-          const r = await fetch('/api/letters',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-          const data = await r.json(); 
-          await refreshJobs(); 
-          if (r.ok) {
-            alert('✅ Success! Job ID: ' + data.id + '\\nTracking: ' + data.tracking?.code);
-          } else {
-            alert('❌ Error: ' + JSON.stringify(data));
-          }
-        } catch(err) {
-          alert('❌ Network Error: ' + err.message);
-        }
-      });
-      refreshJobs();
-    </script>
-  </body></html>`);
-});
 
-// Serve static files from React build
+const PORT = Number(process.env.PORT || 4000);
+
+// Serve static files from React build (AFTER all API routes)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicPath = path.join(__dirname, '..', 'public');
 
 app.use(express.static(publicPath));
 
-// Serve React app for all non-API routes
+// Serve React app for all non-API routes (catch-all)
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   res.sendFile(path.join(publicPath, 'index.html'));
 });
-
-const PORT = Number(process.env.PORT || 4000);
 app.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);
   logger.info(`Frontend available at http://localhost:${PORT}`);
