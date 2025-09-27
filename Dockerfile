@@ -22,10 +22,11 @@ COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/server/package.json ./server/package.json
 COPY --from=builder /app/server/templates ./server/templates
 COPY --from=builder /app/server/prisma ./server/prisma
+COPY --from=builder /app/server/start.js ./server/start.js
 
 # Install production dependencies
 WORKDIR /app/server
 RUN npm install --production --silent
 
 EXPOSE 4000
-CMD ["node", "dist/index.js"]
+CMD ["node", "start.js"]
