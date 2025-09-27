@@ -29,5 +29,5 @@ COPY --from=builder /app/web/dist ./public
 # Install production dependencies
 RUN npm install --production --silent
 
-EXPOSE 4000
+EXPOSE 8080
 CMD ["node", "dist/index.js"]
