@@ -44,8 +44,35 @@ app.use((req, res, next) => {
   }
   next();
 });
+// Stripe webhook must receive the raw body for signature verification.
+// Define it BEFORE the JSON parser so the raw body is preserved for this route.
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).end();
+    const sig = req.headers['stripe-signature'] as string;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    const event = endpointSecret
+      ? stripe.webhooks.constructEvent(req.body as Buffer, sig, endpointSecret)
+      : (JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body)) as any);
+    if ((event as any).type === 'checkout.session.completed') {
+      const session = (event as any).data.object as any;
+      const payload = JSON.parse(session.metadata?.payload || '{}');
+      // Reuse the same job creation endpoint to keep logic in one place
+      return (app as any)._router.handle(
+        { ...req, method: 'POST', url: '/api/letters', headers: { ...req.headers, 'content-type': 'application/json' }, body: payload },
+        res,
+        () => {}
+      );
+    }
+    res.json({ received: true });
+  } catch (err) {
+    logger.error('Webhook error', err);
+    res.status(400).send('Webhook Error');
+  }
+});
+
+// JSON parser for all other routes
 app.use(bodyParser.json({ limit: '2mb' }));
-app.use(bodyParser.text({ type: 'application/json+stripe', limit: '1mb' }));
 
 // Development-friendly Content Security Policy
 // Allows the local devtools and frontend to connect to the API during development.
@@ -90,7 +117,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 // ----- Payments (Stripe Checkout) -----
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PRICE_CENTS = Number(process.env.PRICE_CENTS || 250);
-const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, { apiVersion: '2024-06-20' }) : (null as any);
+const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' }) : (null as any);
 
 app.post('/api/checkout', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
@@ -114,26 +141,7 @@ app.post('/api/checkout', async (req, res) => {
   }
 });
 
-// Stripe webhook to create the job after payment success
-app.post('/api/stripe/webhook', async (req, res) => {
-  try {
-    if (!stripe) return res.status(503).end();
-    const sig = req.headers['stripe-signature'] as string;
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
-    const event = endpointSecret ? stripe.webhooks.constructEvent(req.body as any, sig, endpointSecret) : JSON.parse(String(req.body));
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as any;
-      const payload = JSON.parse(session.metadata?.payload || '{}');
-      // Reuse the same job creation code path
-      req.body = payload;
-      return (app as any)._router.handle({ ...req, method: 'POST', url: '/api/letters' }, res, () => {});
-    }
-    res.json({ received: true });
-  } catch (err) {
-    logger.error('Webhook error', err);
-    res.status(400).send(`Webhook Error`);
-  }
-});
+// (Webhook route defined earlier to preserve raw body)
 
 // --- Simple password login for Admin ---
 function readCookies(req: express.Request): Record<string, string> {
