@@ -1,22 +1,30 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy server package files and install dependencies
-COPY server/package*.json ./
+# Build server
+COPY server/package*.json ./server/
+WORKDIR /app/server
 RUN npm install --silent
-
-# Copy source code and build
 COPY server/ ./
+RUN npm run build
+
+# Build web (React app)
+WORKDIR /app
+COPY web/package*.json ./web/
+WORKDIR /app/web
+RUN npm install --silent
+COPY web/ ./
 RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
 
 # Copy built application
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/templates ./templates
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/server/dist ./dist
+COPY --from=builder /app/server/package.json ./package.json
+COPY --from=builder /app/server/templates ./templates
+COPY --from=builder /app/server/prisma ./prisma
+COPY --from=builder /app/web/dist ./public
 
 # Create start script
 RUN echo 'const { spawn } = require("child_process"); \

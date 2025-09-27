@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import pino from 'pino';
@@ -472,7 +473,24 @@ app.get('/ui', (req, res) => {
   </body></html>`);
 });
 
+// Serve static files from React build
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicPath = path.join(__dirname, '..', 'public');
+
+app.use(express.static(publicPath));
+
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
+
 const PORT = Number(process.env.PORT || 4000);
 app.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);
+  logger.info(`Frontend available at http://localhost:${PORT}`);
+  logger.info(`API endpoints at http://localhost:${PORT}/api/*`);
 });

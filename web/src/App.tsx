@@ -55,7 +55,7 @@ export default function App() {
       // Prepare the body content with proper HTML formatting
       const bodyContent = messageContent.replace(/\n/g, '<br />');
       
-      const res = await fetch('http://localhost:4000/api/letters', {
+      const res = await fetch('/api/letters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -992,7 +992,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
                 justifyContent: 'center'
               }}>
                 <iframe 
-                  src={`http://localhost:4000/api/templates/${previewTemplate}/preview`}
+                  src={`/api/templates/${previewTemplate}/preview`}
                   style={{
                     width: '100%',
                     height: '600px',
@@ -1011,7 +1011,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
                   color: '#666'
                 }}>
                   <a 
-                    href={`http://localhost:4000/api/templates/${previewTemplate}/preview`}
+                    href={`/api/templates/${previewTemplate}/preview`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
