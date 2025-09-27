@@ -72,30 +72,7 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
   res.status(204).end();
 });
 
-// Root route: provide a small landing page so navigating to http://localhost:4000/ doesn't 404
-app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(`
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Mail My Forms — API</title>
-        <style>body{font-family:system-ui,Segoe UI,Arial;padding:24px;background:#f6f8fb;color:#0b1020}</style>
-      </head>
-      <body>
-        <h1>Mail My Forms — API</h1>
-        <p>This server exposes a small JSON API.</p>
-        <ul>
-          <li><a href="/api/health">/api/health</a></li>
-          <li><a href="/api/config">/api/config</a></li>
-          <li>POST <code>/api/letters</code> to create a job (see README)</li>
-        </ul>
-      </body>
-    </html>
-  `);
-});
+// No explicit '/' route. Root is served by the React build via the static/catch-all handlers below.
 
   // Lightweight favicon handler to avoid 404 noise in browser devtools.
   // Browsers commonly request /favicon.ico automatically; returning 204 stops
