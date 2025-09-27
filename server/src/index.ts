@@ -399,6 +399,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicPath = path.join(__dirname, '..', 'public');
 
+logger.info(`Serving static files from: ${publicPath}`);
+
+// Check if public directory exists
+import fs from 'fs';
+try {
+  const files = fs.readdirSync(publicPath);
+  logger.info(`Public directory contents: ${files.join(', ')}`);
+} catch (error) {
+  logger.error(`Public directory not found at: ${publicPath}`);
+}
+
 app.use(express.static(publicPath));
 
 // Serve React app for all non-API routes (catch-all)
@@ -406,7 +417,23 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  res.sendFile(path.join(publicPath, 'index.html'));
+  
+  const indexPath = path.join(publicPath, 'index.html');
+  logger.info(`Attempting to serve: ${indexPath} for path: ${req.path}`);
+  
+  // Check if index.html exists
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    logger.error(`index.html not found at: ${indexPath}`);
+    res.status(500).send(`
+      <h1>Frontend Not Found</h1>
+      <p>The React build files are missing.</p>
+      <p>Expected location: ${indexPath}</p>
+      <p>Public path: ${publicPath}</p>
+      <p><a href="/api/health">Check API Health</a></p>
+    `);
+  }
 });
 app.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);
