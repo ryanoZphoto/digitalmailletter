@@ -85,15 +85,48 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-// Admin auth middleware using ADMIN_TOKEN
+// --- Simple password login for Admin ---
+function readCookies(req: express.Request): Record<string, string> {
+  const header = String(req.headers.cookie || '');
+  return header.split(';').reduce((acc, part) => {
+    const i = part.indexOf('=');
+    if (i > -1) {
+      const k = part.slice(0, i).trim();
+      const v = part.slice(i + 1).trim();
+      acc[k] = decodeURIComponent(v);
+    }
+    return acc;
+  }, {} as Record<string, string>);
+}
+
+function setAdminCookie(res: express.Response, enabled: boolean) {
+  const value = enabled ? '1' : '';
+  const maxAge = enabled ? 7 * 24 * 60 * 60 : 0; // 7 days
+  res.setHeader('Set-Cookie', `admin=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}; Secure`);
+}
+
 function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const token = process.env.ADMIN_TOKEN || '';
-  if (!token) return res.status(503).json({ error: 'ADMIN_TOKEN not configured' });
-  const header = String(req.headers.authorization || '');
-  const provided = header.startsWith('Bearer ') ? header.slice(7) : '';
-  if (provided && provided === token) return next();
+  const cookies = readCookies(req);
+  if (cookies['admin'] === '1') return next();
   return res.status(401).json({ error: 'Unauthorized' });
 }
+
+// Login/Logout endpoints
+app.post('/api/admin/login', (req, res) => {
+  const configured = process.env.ADMIN_PASSWORD || '';
+  if (!configured) return res.status(503).json({ error: 'ADMIN_PASSWORD not configured' });
+  const password = String((req.body && req.body.password) || '');
+  if (password && password === configured) {
+    setAdminCookie(res, true);
+    return res.json({ ok: true });
+  }
+  return res.status(401).json({ error: 'Invalid password' });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  setAdminCookie(res, false);
+  res.json({ ok: true });
+});
 
 // Admin API: health and jobs management (minimal)
 app.get('/api/admin/health', requireAdmin, async (req, res) => {
@@ -440,17 +473,16 @@ app.get('/admin', (req, res) => {
   </head><body>
   <header><strong>Admin</strong> · <span id="health">loading…</span> <button id="refresh" style="margin-left:10px">Refresh</button></header>
   <main>
-    <div style="margin:8px 0 16px 0">Token: <input id="token" type="password" placeholder="ADMIN_TOKEN" style="width:260px"> <button id="save">Use Token</button></div>
+    <div style="margin:8px 0 16px 0"><form id="login" style="display:inline">Password: <input id="pwd" type="password" placeholder="Admin password" style="width:220px"> <button>Login</button></form> <button id="logout" style="margin-left:8px;background:#334155">Logout</button></div>
     <h3>Jobs</h3>
     <table><thead><tr><th>Id</th><th>Status</th><th>Template</th><th>Created</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
     <p style="opacity:.8;margin-top:18px">Tip: Keep this page private. Token is stored in session only.</p>
   </main>
-  <script>
-  const s = sessionStorage; const $ = sel=>document.querySelector(sel);
-  const getTok = ()=> s.getItem('adm_tok') || '';
-  const setTok = v=> s.setItem('adm_tok', v);
+    <script>
+  const $ = sel=>document.querySelector(sel);
   async function req(path, opts={}){
-    const r = await fetch(path, { headers: { 'Authorization': 'Bearer ' + getTok(), 'Content-Type': 'application/json' }, ...opts });
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, (opts.headers||{}));
+    const r = await fetch(path, { headers, credentials: 'include', ...opts });
     if(!r.ok){ const t = await r.text(); throw new Error(t) } return await r.json();
   }
   async function load(){
@@ -466,9 +498,9 @@ app.get('/admin', (req, res) => {
     if(a==='requeue'){ await req('/api/admin/jobs/'+id+'/requeue', { method:'POST' }); await load(); }
     if(a==='delete'){ if(confirm('Delete job '+id+'?')){ await req('/api/admin/jobs/'+id, { method:'DELETE' }); await load(); } }
   });
-  $('#save').onclick = ()=>{ setTok($('#token').value.trim()); load(); };
+  document.getElementById('login').addEventListener('submit', async (e)=>{ e.preventDefault(); try { await req('/api/admin/login', { method:'POST', body: JSON.stringify({ password: $('#pwd').value }) }); await load(); } catch(err){ alert('Login failed'); } });
+  document.getElementById('logout').onclick = async ()=>{ try{ await req('/api/admin/logout', { method:'POST' }); $('#pwd').value=''; await load(); }catch{} };
   $('#refresh').onclick = load;
-  if(getTok()) $('#token').value = getTok();
   load();
   </script></body></html>`;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
