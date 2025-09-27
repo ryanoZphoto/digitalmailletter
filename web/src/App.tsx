@@ -992,7 +992,20 @@ Thank you for your time and consideration. I look forward to hearing from you so
                 justifyContent: 'center'
               }}>
                 <iframe 
-                  src={`/api/templates/${previewTemplate}/preview`}
+                  srcDoc={undefined}
+                  ref={el => {
+                    if (!el) return;
+                    // Post live data to preview endpoint and inject into iframe
+                    const sender = { name: senderName, address_line1: senderLine1, address_line2: senderLine2, address_city: senderCity, address_state: senderState, address_zip: senderZip, address_country: senderCountry };
+                    const recipient = { name: recipientName, address_line1: recipientLine1, address_line2: recipientLine2, address_city: recipientCity, address_state: recipientState, address_zip: recipientZip, address_country: recipientCountry };
+                    fetch(`/api/templates/${previewTemplate}/preview`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sender, recipient, subject, body: messageContent.replace(/\n/g, '<br />') })
+                    }).then(r => r.text()).then(html => {
+                      const doc = el.contentDocument; if (doc) { doc.open(); doc.write(html); doc.close(); }
+                    }).catch(() => {});
+                  }}
                   style={{
                     width: '100%',
                     height: '600px',

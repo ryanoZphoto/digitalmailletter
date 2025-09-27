@@ -384,6 +384,48 @@ app.get('/api/templates/:templateId/preview', async (req, res) => {
   }
 });
 
+// Live preview with user-provided data
+app.post('/api/templates/:templateId/preview', async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const Handlebars = (await import('handlebars')).default;
+    const fs = (await import('fs')).promises;
+    const path = (await import('path')).default;
+    const { fileURLToPath } = await import('url');
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const templatePath = path.join(__dirname, '..', 'templates', `${templateId}.hbs`);
+    try {
+      await fs.access(templatePath);
+    } catch {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    const templateSource = await fs.readFile(templatePath, 'utf8');
+    const template = Handlebars.compile(templateSource);
+
+    const payload = (req.body || {}) as any;
+    const sender = payload.sender || {};
+    const recipient = payload.recipient || {};
+    const html = template({
+      sender,
+      recipient,
+      subject: payload.subject || '',
+      body: payload.body || '',
+      currentDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    });
+
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://www.digitalmailletter.com");
+    res.send(html);
+  } catch (error) {
+    logger.error('Live template preview error:', error);
+    res.status(500).json({ error: 'Failed to generate live template preview' });
+  }
+});
+
 function getTemplatePreviewContent(templateId: string): string {
   switch (templateId) {
     case 'tpl-default':
