@@ -156,7 +156,7 @@ app.post('/api/admin/jobs/:id/requeue', requireAdmin, async (req, res) => {
     } catch {}
   }
   const jobs = readJobs();
-  const j = jobs.find(j => j.id === id);
+  const j = (jobs as any[]).find((jj: any) => jj.id === id);
   if (!j) return res.status(404).json({ error: 'Job not found' });
   j.status = 'submitted';
   if (!j.tracking) j.tracking = { provider: 'mock', code: 'T' + id.toUpperCase(), events: [] } as any;
@@ -174,7 +174,7 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
       return res.json({ ok: true });
     } catch {}
   }
-  const jobs = readJobs().filter(j => j.id !== id);
+  const jobs = (readJobs() as any[]).filter((jj: any) => jj.id !== id);
   writeJobs(jobs);
   res.json({ ok: true });
 });
@@ -488,9 +488,9 @@ app.get('/admin', (req, res) => {
   async function load(){
     try{ const h = await req('/api/admin/health'); $('#health').textContent = 'OK • ' + h.env; }catch(e){ $('#health').textContent = 'Unauthorized or down'; }
     try{ const jobs = await req('/api/admin/jobs'); const tbody = $('#rows'); tbody.innerHTML='';
-      (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td><code>${j.id}</code></td><td>${j.status||''}</td><td>${j.templateId||''}</td><td>${j.createdAt||''}</td><td>
-      <button data-a="requeue" data-id="${j.id}">Requeue</button>
-      <button data-a="delete" data-id="${j.id}" style="background:#ef4444;margin-left:6px">Delete</button></td>`; tbody.appendChild(tr); });
+      (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML='<td><code>'+(j.id||'')+'</code></td><td>'+(j.status||'')+'</td><td>'+(j.templateId||'')+'</td><td>'+(j.createdAt||'')+'</td><td>'+
+      '<button data-a="requeue" data-id="'+j.id+'">Requeue</button>'+
+      '<button data-a="delete" data-id="'+j.id+'" style="background:#ef4444;margin-left:6px">Delete</button></td>'; tbody.appendChild(tr); });
     }catch(e){ /* ignore */ }
   }
   document.addEventListener('click', async (e)=>{
