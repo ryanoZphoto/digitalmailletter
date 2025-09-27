@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { 
+        font-family: 'Georgia', serif; 
+        margin: 40px;
+        line-height: 1.8;
+        color: #2c3e50;
+        background: #fefefe;
+      }
+      .header {
+        border-bottom: 1px dotted #bdc3c7;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+      }
+      .sender { 
+        font-size: 13px; 
+        color: #7f8c8d;
+        font-style: italic;
+      }
+      .date {
+        text-align: right;
+        margin: 20px 0;
+        font-size: 13px;
+        color: #95a5a6;
+      }
+      .greeting {
+        font-size: 16px;
+        color: #e74c3c;
+        margin: 25px 0 15px 0;
+      }
+      .content { 
+        margin: 20px 0;
+        font-size: 14px;
+        text-indent: 20px;
+      }
+      .closing {
+        margin-top: 40px;
+        text-align: right;
+        font-style: italic;
+        color: #e74c3c;
+      }
+      .recipient-label {
+        font-size: 11px;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .recipient { 
+        margin: 15px 0 25px 0; 
+        font-size: 13px;
+        padding: 10px;
+        background: #ecf0f1;
+        border-left: 3px solid #3498db;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="sender">
+        {{sender.name}}<br />
+        {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
+        {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}
+      </div>
+    </div>
+
+    <div class="date">
+      {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
+    </div>
+
+    <div class="recipient-label">To:</div>
+    <div class="recipient">
+      {{recipient.name}}<br />
+      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
+      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}
+    </div>
+
+    <div class="greeting">
+      {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}
+    </div>
+
+    <div class="content">
+      {{{body}}}
+    </div>
+
+    <div class="closing">
+      {{#if closing}}{{closing}}{{else}}With warm regards,{{/if}}<br /><br />
+      {{sender.name}}
+    </div>
+  </body>
+</html>

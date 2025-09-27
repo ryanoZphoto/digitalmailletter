@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { 
+        font-family: 'Arial', sans-serif; 
+        margin: 50px;
+        line-height: 1.6;
+        color: #333;
+      }
+      .letterhead {
+        text-align: center;
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      .sender { 
+        font-size: 12px; 
+        color: #7f8c8d;
+        margin-bottom: 25px;
+      }
+      .date {
+        text-align: right;
+        margin-bottom: 25px;
+        font-size: 12px;
+        color: #95a5a6;
+      }
+      .recipient { 
+        margin-bottom: 25px; 
+        font-size: 13px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-left: 4px solid #3498db;
+      }
+      .content { 
+        margin: 25px 0;
+        font-size: 14px;
+        text-align: justify;
+      }
+      .closing {
+        margin-top: 40px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="letterhead">
+      BUSINESS CORRESPONDENCE
+    </div>
+
+    <div class="sender">
+      {{sender.name}}<br />
+      {{#if sender.company}}{{sender.company}}<br />{{/if}}
+      {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
+      {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}<br />
+      {{sender.address_country}}
+    </div>
+
+    <div class="date">
+      {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
+    </div>
+
+    <div class="recipient">
+      <strong>To:</strong><br />
+      {{recipient.name}}<br />
+      {{#if recipient.company}}{{recipient.company}}<br />{{/if}}
+      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
+      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}<br />
+      {{recipient.address_country}}
+    </div>
+
+    <div class="content">
+      {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}<br /><br />
+      
+      {{{body}}}
+
+      <br /><br />
+      {{#if closing}}{{closing}}{{else}}Best regards,{{/if}}
+    </div>
+
+    <div class="closing">
+      <br /><br />
+      {{sender.name}}{{#if sender.title}}<br />{{sender.title}}{{/if}}
+    </div>
+  </body>
+</html>

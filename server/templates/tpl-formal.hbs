@@ -1,0 +1,96 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { 
+        font-family: 'Times New Roman', serif; 
+        margin: 60px;
+        line-height: 1.6;
+        color: #000;
+      }
+      .letterhead {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 20px;
+        margin-bottom: 40px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .sender { 
+        font-size: 12px; 
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .date {
+        text-align: right;
+        margin-bottom: 30px;
+        font-size: 12px;
+      }
+      .recipient { 
+        margin-bottom: 30px; 
+        font-size: 12px;
+      }
+      .subject {
+        font-weight: bold;
+        text-decoration: underline;
+        margin: 30px 0;
+        text-align: center;
+      }
+      .content { 
+        margin: 30px 0;
+        text-align: justify;
+        font-size: 12px;
+      }
+      .signature {
+        margin-top: 60px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="letterhead">
+      OFFICIAL CORRESPONDENCE
+    </div>
+
+    <div class="sender">
+      {{sender.name}}<br />
+      {{#if sender.company}}{{sender.company}}<br />{{/if}}
+      {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
+      {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}<br />
+      {{sender.address_country}}
+    </div>
+
+    <div class="date">
+      {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
+    </div>
+
+    <div class="recipient">
+      {{recipient.name}}<br />
+      {{#if recipient.company}}{{recipient.company}}<br />{{/if}}
+      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
+      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}<br />
+      {{recipient.address_country}}
+    </div>
+
+    {{#if subject}}
+    <div class="subject">
+      RE: {{subject}}
+    </div>
+    {{/if}}
+
+    <div class="content">
+      {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}<br /><br />
+      
+      {{{body}}}
+
+      <br /><br />
+      {{#if closing}}{{closing}}{{else}}Sincerely,{{/if}}
+    </div>
+
+    <div class="signature">
+      <br /><br />
+      _____________________________<br />
+      {{sender.name}}{{#if sender.title}}<br />{{sender.title}}{{/if}}
+    </div>
+  </body>
+</html>

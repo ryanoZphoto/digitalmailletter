@@ -1,0 +1,19 @@
+{
+  "name": "mail-my-forms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "dev:server": "cd server && pnpm dev",
+    "dev:web": "cd web && pnpm dev",
+    "build": "pnpm -w build",
+    "start": "node server/dist/index.js",
+    "migrate": "cd server && pnpm prisma migrate dev",
+    "prisma:studio": "cd server && pnpm prisma studio"
+  },
+  "devDependencies": {
+    "turbo": "^1.8.4",
+    "pnpm": "^8.0.0"
+  }
+}

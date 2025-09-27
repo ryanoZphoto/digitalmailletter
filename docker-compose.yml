@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mailmyforms
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  server:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/mailmyforms
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/app/server
+
+  web:
+    build: ./web
+    ports:
+      - "3001:3001"
+    depends_on:
+      - server
+
+volumes:
+  db-data:
