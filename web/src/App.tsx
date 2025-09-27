@@ -55,21 +55,11 @@ export default function App() {
       // Prepare the body content with proper HTML formatting
       const bodyContent = messageContent.replace(/\n/g, '<br />');
       
-      const res = await fetch('/api/letters', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          sender, 
-          recipient, 
-          templateId,
-          serviceLevel: 'first_class',
-          body: bodyContent,
-          subject: subject || undefined
-        })
-      });
+      const payload = { sender, recipient, templateId, serviceLevel: 'first_class', body: bodyContent, subject: subject || undefined };
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload }) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed');
-      setResult(`success:Job ID: ${data.id}|Tracking: ${data.tracking?.code || 'N/A'}`);
+      if (!res.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');
+      window.location.href = data.url;
     } catch (err: any) {
       setResult('error:' + (err.message || String(err)));
     } finally {

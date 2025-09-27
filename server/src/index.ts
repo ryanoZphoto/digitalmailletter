@@ -10,6 +10,7 @@ import { readJobs, writeJobs, readConfig, writeConfig } from './store.js';
 import { validateAddressFields, toAlpha2, initCountries } from './address.js';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import Stripe from 'stripe';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(bodyParser.json({ limit: '2mb' }));
+app.use(bodyParser.text({ type: 'application/json+stripe', limit: '1mb' }));
 
 // Development-friendly Content Security Policy
 // Allows the local devtools and frontend to connect to the API during development.
@@ -84,6 +86,54 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
   });
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// ----- Payments (Stripe Checkout) -----
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_PRICE_CENTS = Number(process.env.PRICE_CENTS || 250);
+const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, { apiVersion: '2024-06-20' }) : (null as any);
+
+app.post('/api/checkout', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
+  try {
+    const { payload } = req.body || {};
+    if (!payload) return res.status(400).json({ error: 'Missing payload' });
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        { price_data: { currency: 'usd', product_data: { name: 'Physical Letter' }, unit_amount: STRIPE_PRICE_CENTS }, quantity: 1 }
+      ],
+      success_url: `${req.protocol}://${req.get('host')}?success=1&job={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.protocol}://${req.get('host')}?canceled=1`,
+      metadata: { payload: JSON.stringify(payload) }
+    });
+    res.json({ id: session.id, url: session.url });
+  } catch (e) {
+    logger.error(String(e));
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+// Stripe webhook to create the job after payment success
+app.post('/api/stripe/webhook', async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).end();
+    const sig = req.headers['stripe-signature'] as string;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    const event = endpointSecret ? stripe.webhooks.constructEvent(req.body as any, sig, endpointSecret) : JSON.parse(String(req.body));
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as any;
+      const payload = JSON.parse(session.metadata?.payload || '{}');
+      // Reuse the same job creation code path
+      req.body = payload;
+      return (app as any)._router.handle({ ...req, method: 'POST', url: '/api/letters' }, res, () => {});
+    }
+    res.json({ received: true });
+  } catch (err) {
+    logger.error('Webhook error', err);
+    res.status(400).send(`Webhook Error`);
+  }
+});
 
 // --- Simple password login for Admin ---
 function readCookies(req: express.Request): Record<string, string> {
