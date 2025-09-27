@@ -1,0 +1,73 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    # Install and build server
+    - name: Install server dependencies
+      run: |
+        cd server
+        npm install
+
+    - name: Build server
+      run: |
+        cd server
+        npm run build
+
+    # Install and build web (React app)
+    - name: Install web dependencies
+      run: |
+        cd web
+        npm install
+
+    - name: Build React app
+      run: |
+        cd web
+        npm run build
+
+    # Verify builds
+    - name: Verify builds
+      run: |
+        echo "Server build files:"
+        ls -la server/dist/
+        echo "Web build files:"
+        ls -la web/dist/
+
+    # Install Railway CLI and deploy
+    - name: Install Railway CLI
+      run: npm install -g @railway/cli
+
+    - name: Deploy to Railway
+      run: railway up --detach
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+    # Wait and test deployment
+    - name: Wait for deployment
+      run: sleep 30
+
+    - name: Test deployment
+      run: |
+        echo "Testing health endpoint..."
+        curl -f https://digitalmailletter-production.up.railway.app/api/health || exit 1
+        echo "Health check passed!"

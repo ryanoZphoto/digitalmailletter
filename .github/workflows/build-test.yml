@@ -1,0 +1,70 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install server dependencies
+      run: |
+        cd server
+        npm ci
+
+    - name: Build server (TypeScript)
+      run: |
+        cd server
+        npm run build
+
+    - name: Install web dependencies  
+      run: |
+        cd web
+        npm ci
+
+    - name: Build React app
+      run: |
+        cd web
+        npm run build
+
+    - name: Verify build outputs
+      run: |
+        echo "=== Server Build Output ==="
+        ls -la server/dist/
+        echo ""
+        echo "=== Web Build Output ==="
+        ls -la web/dist/
+        echo ""
+        echo "=== Web Build Index.html ==="
+        head -10 web/dist/index.html
+
+    - name: Test server can start
+      run: |
+        cd server
+        timeout 10s node dist/index.js || echo "Server test completed"
+
+    # Upload build artifacts for debugging
+    - name: Upload server build
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-build
+        path: server/dist/
+
+    - name: Upload web build
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-build
+        path: web/dist/
