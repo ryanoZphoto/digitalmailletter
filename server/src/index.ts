@@ -653,3 +653,8 @@ app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Frontend available at 0.0.0.0:${PORT}`);
   logger.info(`API endpoints at 0.0.0.0:${PORT}/api/*`);
 });
+
+// Start background worker in-process so paid jobs are sent
+import('./worker.js')
+  .then(() => logger.info('Background worker started'))
+  .catch((e) => logger.error('Failed to start worker', e));
