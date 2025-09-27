@@ -435,8 +435,8 @@ app.get('*', (req, res) => {
     `);
   }
 });
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on http://0.0.0.0:${PORT}`);
-  logger.info(`Frontend available at http://0.0.0.0:${PORT}`);
-  logger.info(`API endpoints at http://0.0.0.0:${PORT}/api/*`);
+app.listen(PORT, '::', () => {
+  logger.info(`Server running on [::]:${PORT}`);
+  logger.info(`Frontend available at [::]:${PORT}`);
+  logger.info(`API endpoints at [::]:${PORT}/api/*`);
 });
