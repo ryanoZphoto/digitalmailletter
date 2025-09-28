@@ -84,12 +84,27 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         }
       } else if (session.metadata) {
         // Use individual metadata fields as fallback
+        // For now, create a basic job with minimal data since we don't have full form data
         payload = {
           templateId: session.metadata.templateId || 'tpl-default',
-          sender: { name: session.metadata.sender || '' },
-          recipient: { name: session.metadata.recipient || '' },
-          body: session.metadata.body || '',
-          subject: session.metadata.subject || '',
+          sender: { 
+            name: session.metadata.sender || session.customer_details?.name || 'Unknown Sender',
+            address_line1: 'Address Not Provided',
+            address_city: 'Unknown',
+            address_state: 'Unknown',
+            address_zip: '00000',
+            address_country: 'US'
+          },
+          recipient: { 
+            name: session.metadata.recipient || 'Unknown Recipient',
+            address_line1: 'Address Not Provided',
+            address_city: 'Unknown',
+            address_state: 'Unknown',
+            address_zip: '00000',
+            address_country: 'US'
+          },
+          body: session.metadata.body || 'Letter content not provided',
+          subject: session.metadata.subject || 'Letter from Digital Mail Letter',
           customerEmail: session.customer_details?.email || session.customer_email
         };
       }
@@ -311,9 +326,7 @@ app.post('/api/checkout', async (req, res) => {
       success_url: `${req.protocol}://${req.get('host')}?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.protocol}://${req.get('host')}?canceled=1`,
       metadata: { 
-        templateId: payload.templateId || 'default',
-        sender: payload.sender?.name?.substring(0, 50) || 'Unknown',
-        recipient: payload.recipient?.name?.substring(0, 50) || 'Unknown'
+        payload: JSON.stringify(payload)
       }
     });
     res.json({ id: session.id, url: session.url });
