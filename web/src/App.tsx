@@ -322,7 +322,9 @@ Thank you for your time and consideration. I look forward to hearing from you so
                     Select a template and preview how your letter will look.
                   </p>
 
-                  <div style={{ display: 'grid', gap: '10px' }}>
+                  <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+                    <legend style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)' }}>Template options</legend>
+                    <div style={{ display: 'grid', gap: '10px' }}>
                     {templates.map(template => (
                       <div 
                         key={template.id}
@@ -346,14 +348,15 @@ Thank you for your time and consideration. I look forward to hearing from you so
                                 value={template.id}
                                 checked={templateId === template.id}
                                 onChange={() => setTemplateId(template.id)}
+                                id={`template-${template.id}`}
                                 style={{ margin: 0 }}
                               />
-                              <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
+                              <label htmlFor={`template-${template.id}`} style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', cursor: 'pointer' }}>
                                 {template.name}
-                              </h4>
+                              </label>
                             </div>
                             
-                            <p style={{ fontSize: '14px', color: '#666', margin: '0 0 12px 0' }}>
+                            <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 12px 0' }}>
                               {template.description}
                             </p>
                             
@@ -363,8 +366,8 @@ Thank you for your time and consideration. I look forward to hearing from you so
                                   key={index}
                                   style={{ 
                                     fontSize: '12px', 
-                                    background: '#e2e8f0', 
-                                    color: '#4a5568',
+                                    background: '#e5e7eb', 
+                                    color: '#374151',
                                     padding: '2px 8px', 
                                     borderRadius: '4px' 
                                   }}
@@ -382,7 +385,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
                               openPreview(template.id);
                             }}
                             style={{ 
-                              background: '#3498db', 
+                              background: '#1d4ed8', 
                               color: 'white', 
                               border: 'none', 
                               padding: '6px 12px', 
@@ -397,7 +400,8 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         </div>
                       </div>
                     ))}
-                  </div>
+                    </div>
+                  </fieldset>
                 </div>
 
                 {/* Address Sections - Right Side, Stacked */}
@@ -509,10 +513,11 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
+                        <label htmlFor="sender-state" style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#111827', fontSize: '13px' }}>
                           State *
                         </label>
                         <select 
+                          id="sender-state"
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
@@ -600,10 +605,11 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
+                        <label htmlFor="sender-country" style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#111827', fontSize: '13px' }}>
                           Country *
                         </label>
                         <select 
+                          id="sender-country"
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
@@ -731,10 +737,11 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
+                        <label htmlFor="recipient-state" style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#111827', fontSize: '13px' }}>
                           State *
                         </label>
                         <select 
+                          id="recipient-state"
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
@@ -822,10 +829,11 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
+                        <label htmlFor="recipient-country" style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#111827', fontSize: '13px' }}>
                           Country *
                         </label>
                         <select 
+                          id="recipient-country"
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
@@ -1070,10 +1078,10 @@ Thank you for your time and consideration. I look forward to hearing from you so
           }}>
             <div>
               <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>📧 Customer Support</h4>
-              <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>ryan@ryanosmunphoto.com</p>
+              <p style={{ margin: 0, color: '#e2e8f0', fontSize: '14px' }}>ryan@ryanosmunphoto.com</p>
             </div>
           </div>
-          <p style={{ fontSize: '14px', color: '#718096', margin: '30px 0 0 0' }}>
+          <p style={{ fontSize: '14px', color: '#cbd5e1', margin: '30px 0 0 0' }}>
             © 2025 Mail My Forms. Professional letter printing and mailing service. Send letters online, business correspondence, legal notice mailing.
           </p>
         </div>
