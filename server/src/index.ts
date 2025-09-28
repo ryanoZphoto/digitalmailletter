@@ -990,17 +990,25 @@ try {
 
 app.use(express.static(publicPath));
 
-// Serve sitemap.xml with correct content-type
+// Serve sitemap.xml with correct content-type and fallback
 app.get('/sitemap.xml', (req, res) => {
   const __filenameLocal = fileURLToPath(import.meta.url);
   const __dirnameLocal = path.dirname(__filenameLocal);
   // Project root relative to compiled dist file
   const sitemapPath = path.join(__dirnameLocal, '..', 'sitemap.xml');
-  res.setHeader('Content-Type', 'application/xml');
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.sendFile(sitemapPath, (err) => {
     if (err) {
-      logger.error(`Sitemap file not found at: ${sitemapPath}`, err);
-      res.status(404).send('Sitemap not found');
+      logger.error(`Sitemap file not found at: ${sitemapPath}, serving fallback`, err);
+      const fallback = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+        `  <url>\n` +
+        `    <loc>https://www.digitalmailletter.com/</loc>\n` +
+        `    <changefreq>weekly</changefreq>\n` +
+        `    <priority>1.0</priority>\n` +
+        `  </url>\n` +
+        `</urlset>`;
+      res.status(200).send(fallback);
     }
   });
 });
