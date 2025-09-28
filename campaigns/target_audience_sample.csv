@@ -1,0 +1,13 @@
+company_name,contact_name,address_line1,address_line2,address_city,address_state,address_zip,address_country,email,phone,industry,segment,merge_subject,merge_reference,merge_offer
+Oakridge Law Group,Emily Carter,1200 Market St,Suite 450,San Francisco,CA,94103,US,emily@oakridgelaw.com,415-555-0142,Legal,SMB_Legal,Notice of Policy Update,POL-2025-0412,Save time with tracked mail
+BrightSmile Dental,Dr. Alan Reyes,2450 Sunset Blvd,Ste 210,Los Angeles,CA,90026,US,info@brightsmiledental.com,323-555-0198,Healthcare,SMB_Healthcare,Patient Statement Enclosed,ACCT-58421,Same-day processing available
+Harbor Property Mgmt,Lisa Nguyen,785 Harbor Ave,,Long Beach,CA,90802,US,lisa@harborpm.com,562-555-0119,Property Management,Property_HOA,Resident Notice Enclosed,BLDG-7A,Automate monthly mailings
+Summit Bookkeeping,Olivia Bennett,52 Pine St,Floor 3,Boston,MA,02110,US,olivia@summitbooks.co,617-555-0133,Accounting,Acct_Bookkeeping,Invoice Statement,INV-2025-112,First-class USPS tracking
+CivicWorks City Office,Mark Johnson,200 Main St,,Madison,WI,53703,US,mark.johnson@civicworks.gov,608-555-0180,Government,Gov_Local,Community Notice,ANN-2025-04,Print + mail in one step
+Northside Pediatrics,Dr. Priya Shah,3300 North Ave,Suite B,Chicago,IL,60614,US,office@northsidepeds.com,773-555-0172,Healthcare,SMB_Healthcare,Billing Reminder,PT-90318,Reduce returned mail
+Riverbank HOA,Daniel Ortiz,18 Riverbank Dr,Clubhouse,Austin,TX,78738,US,daniel@riverbankhoa.org,512-555-0156,Property Management,Property_HOA,Annual Dues Notice,HOA-2025,Verified addresses
+Acme Compliance Software,Sarah Kim,77 Battery St,Floor 10,San Francisco,CA,94111,US,sarah.kim@acmecompliance.com,415-555-0164,Software,B2B_SaaS,Service Notice,CASE-84412,API-integrated workflows
+GreenLeaf Family Practice,Dr. Hannah Cole,940 Maple Rd,,Buffalo,NY,14221,US,admin@greenleaffp.com,716-555-0107,Healthcare,SMB_Healthcare,Appointment Reminder,APPT-0425,Personalized letters
+Everest Legal Services,Jonathan Myers,410 Broad St,Suite 900,Newark,NJ,07102,US,jmyers@everestlegal.com,973-555-0149,Legal,SMB_Legal,Certified Notice,CERT-22019,Chain-of-custody support
+BlueSky Accounting,Noah Ramirez,610 3rd Ave,Ste 5,Seattle,WA,98104,US,hello@blueskyacct.com,206-555-0187,Accounting,Acct_Bookkeeping,Statement Enclosed,STMT-0315,Lower ops overhead
+Lighthouse School District,Rebecca Allen,800 Ocean Blvd,Admin Office,Jacksonville,FL,32250,US,rebecca.allen@lighthouse.k12.fl.us,904-555-0122,Education,Gov_Local,Parent Communication,PARENT-2025-05,Bulk-friendly pricing
