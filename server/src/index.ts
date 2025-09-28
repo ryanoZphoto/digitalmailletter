@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import pino from 'pino';
-import { init } from './db.js';
+// Import db init conditionally to avoid Prisma crashes
 import { readJobs, writeJobs, readConfig, writeConfig } from './store.js';
 import { validateAddressFields, toAlpha2, initCountries } from './address.js';
 import { z } from 'zod';
@@ -188,11 +188,15 @@ app.post('/api/admin/logout', (req, res) => {
 
 // Admin API: health and jobs management (minimal)
 app.get('/api/admin/health', requireAdmin, async (req, res) => {
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { connected } = await init();
   res.json({ ok: true, env: process.env.NODE_ENV || 'development', dbConnected: connected, time: new Date().toISOString() });
 });
 
 app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { prisma, connected } = await init();
   if (connected && prisma) {
     try {
@@ -206,6 +210,8 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
 app.post('/api/admin/jobs/:id/requeue', requireAdmin, async (req, res) => {
   const { id } = req.params;
   const now = new Date().toISOString();
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { prisma, connected } = await init();
   if (connected && prisma) {
     try {
@@ -225,6 +231,8 @@ app.post('/api/admin/jobs/:id/requeue', requireAdmin, async (req, res) => {
 
 app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
   const { id } = req.params;
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { prisma, connected } = await init();
   if (connected && prisma) {
     try {
@@ -279,6 +287,8 @@ app.post('/api/letters', async (req, res) => {
   logger.info({ payload }, 'create letter');
 
   // Try initialize DB; if not connected, fallback to file store
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { prisma, connected } = await init();
   const id = nanoid(12);
   const now = new Date().toISOString();
@@ -354,6 +364,8 @@ app.post('/api/letters', async (req, res) => {
 
 // List jobs (reads from DB if connected, otherwise file store)
 app.get('/api/jobs', async (req, res) => {
+  // Import db init conditionally
+  const { init } = await import('./db.js');
   const { prisma, connected } = await init();
   if (connected && prisma) {
     try {
