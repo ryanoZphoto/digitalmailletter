@@ -1,0 +1,26 @@
+# Railway Environment Variables - Copy these into Railway Dashboard
+# Go to: https://railway.app/project/[your-project]/service/[your-service]/variables
+
+# STRIPE PAYMENTS
+STRIPE_SECRET_KEY=[YOUR_STRIPE_LIVE_SECRET_KEY]
+STRIPE_WEBHOOK_SECRET=[YOUR_STRIPE_WEBHOOK_SECRET]
+PRICE_CENTS=250
+
+# LOB MAIL PROVIDER (for actual letter sending)
+LOB_API_KEY=[YOUR_LOB_LIVE_API_KEY]
+LOB_MODE=live
+LOB_DEFAULT_COLOR=true
+
+# ADMIN ACCESS
+ADMIN_PASSWORD=[SET_A_STRONG_PASSWORD]
+
+# DATABASE (Railway should auto-set this)
+DATABASE_URL=[AUTO_SET_BY_RAILWAY]
+
+# SERVER SETTINGS
+PORT=8080
+NODE_ENV=production
+
+# DOMAIN
+FRONTEND_URL=https://www.digitalmailletter.com
+BACKEND_URL=https://www.digitalmailletter.com
