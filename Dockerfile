@@ -4,20 +4,6 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache openssl
 
-# Install Chrome and dependencies for Puppeteer
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-# Set Puppeteer to use installed Chrome
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 # Build server
 COPY server/package*.json ./server/
 WORKDIR /app/server
@@ -36,12 +22,8 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-# Install runtime dependencies for Prisma and Puppeteer
-RUN apk add --no-cache openssl chromium nss freetype harfbuzz ca-certificates ttf-freefont
-
-# Set Puppeteer to use installed Chrome
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Install runtime dependencies for Prisma
+RUN apk add --no-cache openssl
 
 # Copy built application
 COPY --from=builder /app/server/dist ./dist
