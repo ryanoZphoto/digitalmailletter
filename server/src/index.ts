@@ -132,7 +132,11 @@ app.post('/api/checkout', async (req, res) => {
       ],
       success_url: `${req.protocol}://${req.get('host')}?success=1&job={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.protocol}://${req.get('host')}?canceled=1`,
-      metadata: { payload: JSON.stringify(payload) }
+      metadata: { 
+        templateId: payload.templateId || 'default',
+        sender: payload.sender?.name?.substring(0, 50) || 'Unknown',
+        recipient: payload.recipient?.name?.substring(0, 50) || 'Unknown'
+      }
     });
     res.json({ id: session.id, url: session.url });
   } catch (e) {
