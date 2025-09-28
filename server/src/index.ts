@@ -191,7 +191,7 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@digitalmailletter.com';
 
-const transporter = EMAIL_USER && EMAIL_PASS ? nodemailer.createTransporter({
+const transporter = EMAIL_USER && EMAIL_PASS ? nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: EMAIL_USER,
