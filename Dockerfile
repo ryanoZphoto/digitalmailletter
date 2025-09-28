@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install build dependencies
-RUN apk add --no-cache openssl1.1-libs
+RUN apk add --no-cache openssl
 
 # Build server
 COPY server/package*.json ./server/
@@ -23,7 +23,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install runtime dependencies for Prisma
-RUN apk add --no-cache openssl1.1-libs
+RUN apk add --no-cache openssl
 
 # Copy built application
 COPY --from=builder /app/server/dist ./dist
