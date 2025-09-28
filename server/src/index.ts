@@ -144,8 +144,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           serviceLevel: payload.serviceLevel || 'first_class',
           options: payload.options || [],
           tracking: {
-            provider: 'mock',
-            code: 'T' + id.toUpperCase(),
+            provider: 'pending',
+            code: '',
             events: [{ at: now, status: 'submitted' }]
           },
           stripeSessionId: session.id,

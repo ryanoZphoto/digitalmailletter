@@ -165,21 +165,15 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ sessionId }) => {
             <div style={{ display: 'grid', gap: '20px', marginBottom: '30px' }}>
               <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
                 <h3 style={{ color: '#2c3e50', marginBottom: '10px' }}>Tracking Information</h3>
-                <p><strong>Tracking Code:</strong> 
-                  {jobData.tracking.provider === 'mock' ? (
-                    <span style={{ color: '#ff6b6b' }}>
-                      <code style={{ background: '#ffe6e6', padding: '4px 8px', borderRadius: '4px' }}>
-                        {jobData.tracking.code}
-                      </code>
-                      <br />
-                      <small style={{ fontSize: '12px' }}>Processing... Real tracking code will appear shortly</small>
-                    </span>
-                  ) : (
+                {jobData.tracking.provider === 'lob' && jobData.tracking.code ? (
+                  <p><strong>Tracking Code:</strong> 
                     <code style={{ background: '#e9ecef', padding: '4px 8px', borderRadius: '4px' }}>
                       {jobData.tracking.code}
                     </code>
-                  )}
-                </p>
+                  </p>
+                ) : (
+                  <p><strong>Status:</strong> <span style={{ color: '#f39c12' }}>Processing your letter...</span></p>
+                )}
                 <p><strong>Status:</strong> 
                   <span style={{ 
                     color: jobData.status === 'completed' ? '#27ae60' : 
