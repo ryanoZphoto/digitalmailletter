@@ -1060,23 +1060,15 @@ Thank you for your time and consideration. I look forward to hearing from you so
             Our mail processing service handles everything from printing to delivery. 
             Perfect for businesses, legal professionals, and anyone who needs reliable mail service.
           </p>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '20px',
             margin: '30px 0'
           }}>
             <div>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>📞 Support</h4>
-              <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>1-800-MAIL-NOW</p>
-            </div>
-            <div>
               <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>📧 Email</h4>
-              <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>support@mailmyforms.com</p>
-            </div>
-            <div>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>⏰ Hours</h4>
-              <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>Mon-Fri 9AM-6PM EST</p>
+              <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>ryan@ryanosmunphoto.com</p>
             </div>
           </div>
           <p style={{ fontSize: '14px', color: '#718096', margin: '30px 0 0 0' }}>
