@@ -992,7 +992,10 @@ app.use(express.static(publicPath));
 
 // Serve sitemap.xml with correct content-type
 app.get('/sitemap.xml', (req, res) => {
-  const sitemapPath = path.join(process.cwd(), 'sitemap.xml');
+  const __filenameLocal = fileURLToPath(import.meta.url);
+  const __dirnameLocal = path.dirname(__filenameLocal);
+  // Project root relative to compiled dist file
+  const sitemapPath = path.join(__dirnameLocal, '..', 'sitemap.xml');
   res.setHeader('Content-Type', 'application/xml');
   res.sendFile(sitemapPath, (err) => {
     if (err) {
@@ -1004,7 +1007,9 @@ app.get('/sitemap.xml', (req, res) => {
 
 // Serve robots.txt
 app.get('/robots.txt', (req, res) => {
-  const robotsPath = path.join(process.cwd(), 'robots.txt');
+  const __filenameLocal = fileURLToPath(import.meta.url);
+  const __dirnameLocal = path.dirname(__filenameLocal);
+  const robotsPath = path.join(__dirnameLocal, '..', 'robots.txt');
   res.setHeader('Content-Type', 'text/plain');
   res.sendFile(robotsPath, (err) => {
     if (err) {
