@@ -992,16 +992,26 @@ app.use(express.static(publicPath));
 
 // Serve sitemap.xml with correct content-type
 app.get('/sitemap.xml', (req, res) => {
-  const sitemapPath = path.join(__dirname, 'sitemap.xml');
+  const sitemapPath = path.join(__dirname, '..', 'sitemap.xml');
   res.setHeader('Content-Type', 'application/xml');
-  res.sendFile(sitemapPath);
+  res.sendFile(sitemapPath, (err) => {
+    if (err) {
+      logger.error(`Sitemap file not found at: ${sitemapPath}`, err);
+      res.status(404).send('Sitemap not found');
+    }
+  });
 });
 
 // Serve robots.txt
 app.get('/robots.txt', (req, res) => {
-  const robotsPath = path.join(__dirname, 'robots.txt');
+  const robotsPath = path.join(__dirname, '..', 'robots.txt');
   res.setHeader('Content-Type', 'text/plain');
-  res.sendFile(robotsPath);
+  res.sendFile(robotsPath, (err) => {
+    if (err) {
+      logger.error(`Robots.txt file not found at: ${robotsPath}`, err);
+      res.status(404).send('Robots.txt not found');
+    }
+  });
 });
 
 // Serve React app for all non-API routes (catch-all)
