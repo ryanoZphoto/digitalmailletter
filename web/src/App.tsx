@@ -159,9 +159,9 @@ Thank you for your time and consideration. I look forward to hearing from you so
         backdropFilter: 'blur(10px)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h1 style={{ 
-            margin: 0, 
-            fontSize: '32px', 
+          <h1 style={{
+            margin: 0,
+            fontSize: '32px',
             fontWeight: '700',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             WebkitBackgroundClip: 'text',
@@ -170,13 +170,13 @@ Thank you for your time and consideration. I look forward to hearing from you so
           }}>
             📮 Mail My Forms
           </h1>
-          <p style={{ 
-            margin: '8px 0 0 0', 
-            fontSize: '18px', 
+          <p style={{
+            margin: '8px 0 0 0',
+            fontSize: '18px',
             color: '#666',
             fontWeight: '400'
           }}>
-            Professional Letter Printing & Mailing Service
+            Professional Letter Printing & Mailing Service | Send Letters Online
           </p>
         </div>
       </div>
@@ -194,7 +194,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
             fontWeight: '700',
             color: '#2d3748'
           }}>
-            Send Physical Letters with Ease
+            Send Physical Letters Online - Professional Letter Printing & Mailing Service
           </h2>
           <p style={{
             fontSize: '16px',
@@ -202,8 +202,9 @@ Thank you for your time and consideration. I look forward to hearing from you so
             margin: '0 0 25px 0',
             lineHeight: '1.5'
           }}>
-            We print, stamp, and mail your letters for you. Perfect for businesses, legal notices,
-            personal correspondence, and any situation where a physical letter is required.
+            Professional letter printing and mailing service for business correspondence, legal notices, and personal letters.
+            We handle everything from printing to USPS delivery with full tracking. Same-day processing available.
+            Starting at just $2.50 per letter.
           </p>
 
           {/* Features - Horizontal Layout */}
@@ -219,23 +220,23 @@ Thank you for your time and consideration. I look forward to hearing from you so
           }}>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>🖨️</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Professional Printing</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>High-quality letterhead</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Professional Letter Printing</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>High-quality business letterhead</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>📬</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Real Mail Delivery</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>USPS handling</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>USPS Letter Mailing</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>First-class mail delivery</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>📊</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Tracking & Status</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Full visibility</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Mail Tracking</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Real-time delivery updates</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>⚡</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Fast Turnaround</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Same-day processing</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Same-Day Processing</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Fast letter turnaround</p>
             </div>
           </div>
         </div>
@@ -263,14 +264,14 @@ Thank you for your time and consideration. I look forward to hearing from you so
                 fontWeight: '600',
                 color: '#2d3748'
               }}>
-                Send Your Letter
+                Send Your Letter Online - Professional Letter Mailing Service
               </h2>
               <p style={{
                 fontSize: '12px',
                 color: '#666',
                 margin: '0 0 10px 0'
               }}>
-                Fill out the form below to send a professional letter. We'll print and mail it for you.
+                Fill out the form below to send a professional letter. We'll print and mail it for you with USPS tracking.
               </p>
               <button
                 onClick={fillDemoData}
@@ -1054,11 +1055,12 @@ Thank you for your time and consideration. I look forward to hearing from you so
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h3 style={{ margin: '0 0 20px 0', fontSize: '24px', fontWeight: '600' }}>
-            Need Help?
+            Professional Letter Printing & Mailing Service
           </h3>
           <p style={{ fontSize: '16px', color: '#a0aec0', margin: '0 0 20px 0' }}>
-            Our mail processing service handles everything from printing to delivery. 
-            Perfect for businesses, legal professionals, and anyone who needs reliable mail service.
+            Our online letter mailing service handles everything from professional printing to USPS delivery.
+            Perfect for business correspondence, legal notices, personal letters, and anyone who needs reliable mail service.
+            Fast turnaround, full tracking, starting at $2.50 per letter.
           </p>
           <div style={{
             display: 'grid',
@@ -1067,12 +1069,12 @@ Thank you for your time and consideration. I look forward to hearing from you so
             margin: '30px 0'
           }}>
             <div>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>📧 Email</h4>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>📧 Customer Support</h4>
               <p style={{ margin: 0, color: '#a0aec0', fontSize: '14px' }}>ryan@ryanosmunphoto.com</p>
             </div>
           </div>
           <p style={{ fontSize: '14px', color: '#718096', margin: '30px 0 0 0' }}>
-            © 2025 Mail My Forms. Professional letter printing and mailing service.
+            © 2025 Mail My Forms. Professional letter printing and mailing service. Send letters online, business correspondence, legal notice mailing.
           </p>
         </div>
       </div>
