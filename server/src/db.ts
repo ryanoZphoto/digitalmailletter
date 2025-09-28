@@ -1,13 +1,12 @@
-import { PrismaClient } from '@prisma/client';
 import pino from 'pino';
 
 const logger = (pino as any)();
 
-let prisma: PrismaClient | null = null;
+let prisma: any = null;
 let connected = false;
 
 async function init() {
-  if (prisma) return { prisma, connected };
+  if (prisma !== undefined) return { prisma, connected };
   
   // Check if DATABASE_URL is properly formatted
   const dbUrl = process.env.DATABASE_URL;
@@ -19,6 +18,8 @@ async function init() {
   }
   
   try {
+    // Only import PrismaClient if we have a valid DATABASE_URL
+    const { PrismaClient } = await import('@prisma/client');
     prisma = new PrismaClient();
     // try a simple query to validate connection
     await prisma.$connect();
