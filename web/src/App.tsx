@@ -148,12 +148,12 @@ Thank you for your time and consideration. I look forward to hearing from you so
     <div style={{ 
       minHeight: '100vh', 
       fontFamily: 'system-ui, -apple-system, sans-serif',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: '#333'
+      background: '#111827',
+      color: '#e5e7eb'
     }}>
       {/* Header */}
       <div style={{ 
-        background: 'rgba(255,255,255,0.95)', 
+        background: '#1f2937', 
         padding: '20px 0',
         borderBottom: '1px solid #e1e5e9',
         backdropFilter: 'blur(10px)'
@@ -163,17 +163,14 @@ Thank you for your time and consideration. I look forward to hearing from you so
             margin: 0,
             fontSize: '32px',
             fontWeight: '700',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            display: 'inline-block'
+            color: '#f3f4f6'
           }}>
             📮 Mail My Forms
           </h1>
           <p style={{
             margin: '8px 0 0 0',
             fontSize: '18px',
-            color: '#666',
+            color: '#d1d5db',
             fontWeight: '400'
           }}>
             Professional Letter Printing & Mailing Service | Send Letters Online
@@ -183,7 +180,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
 
       {/* Hero Section */}
       <div style={{
-        background: 'rgba(255,255,255,0.95)',
+        background: '#111827',
         padding: '40px 20px',
         textAlign: 'center' as const
       }}>
@@ -192,13 +189,13 @@ Thank you for your time and consideration. I look forward to hearing from you so
             fontSize: '32px',
             margin: '0 0 15px 0',
             fontWeight: '700',
-            color: '#2d3748'
+            color: '#f3f4f6'
           }}>
             Send Physical Letters Online - Professional Letter Printing & Mailing Service
           </h2>
           <p style={{
             fontSize: '16px',
-            color: '#4a5568',
+            color: '#d1d5db',
             margin: '0 0 25px 0',
             lineHeight: '1.5'
           }}>
@@ -215,28 +212,28 @@ Thank you for your time and consideration. I look forward to hearing from you so
             gap: '10px',
             margin: '20px 0',
             padding: '15px',
-            background: '#f8fafc',
+            background: '#1f2937',
             borderRadius: '8px'
           }}>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>🖨️</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Professional Letter Printing</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>High-quality business letterhead</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600', color: '#e5e7eb' }}>Professional Letter Printing</h3>
+              <p style={{ fontSize: '12px', color: '#d1d5db', margin: 0 }}>High-quality business letterhead</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>📬</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>USPS Letter Mailing</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>First-class mail delivery</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600', color: '#e5e7eb' }}>USPS Letter Mailing</h3>
+              <p style={{ fontSize: '12px', color: '#d1d5db', margin: 0 }}>First-class mail delivery</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>📊</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Mail Tracking</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Real-time delivery updates</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600', color: '#e5e7eb' }}>Mail Tracking</h3>
+              <p style={{ fontSize: '12px', color: '#d1d5db', margin: 0 }}>Real-time delivery updates</p>
             </div>
             <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
               <div style={{ fontSize: '24px', marginBottom: '6px' }}>⚡</div>
-              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Same-Day Processing</h3>
-              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Fast letter turnaround</p>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600', color: '#e5e7eb' }}>Same-Day Processing</h3>
+              <p style={{ fontSize: '12px', color: '#d1d5db', margin: 0 }}>Fast letter turnaround</p>
             </div>
           </div>
         </div>
@@ -244,7 +241,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
 
       {/* Form Section */}
       <div style={{
-        background: '#f8fafc',
+        background: '#0f172a',
         padding: '5px 20px 20px 20px',
         marginTop: '-10px'
       }}>
