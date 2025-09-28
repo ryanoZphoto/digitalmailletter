@@ -757,7 +757,7 @@ app.get('/admin', (req, res) => {
   </head><body>
   <header><strong>Admin</strong> · <span id="health">loading…</span> <button id="refresh" style="margin-left:10px">Refresh</button></header>
   <main>
-    <div style="margin:8px 0 16px 0"><form id="login" style="display:inline">Password: <input id="pwd" type="password" placeholder="Admin password" style="width:220px"> <button>Login</button></form> <button id="logout" style="margin-left:8px;background:#334155">Logout</button></div>
+    <div style="margin:8px 0 16px 0"><form id="login" style="display:inline">Password: <input id="pwd" type="password" placeholder="Admin password" autocomplete="new-password" style="width:220px"> <button>Login</button></form> <button id="logout" style="margin-left:8px;background:#334155">Logout</button></div>
     <h3>Jobs</h3>
     <table><thead><tr><th>Id</th><th>Status</th><th>Template</th><th>Created</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
     <p style="opacity:.8;margin-top:18px">Tip: Keep this page private. Token is stored in session only.</p>
@@ -770,7 +770,7 @@ app.get('/admin', (req, res) => {
     if(!r.ok){ const t = await r.text(); throw new Error(t) } return await r.json();
   }
   async function load(){
-    try{ const h = await req('/api/admin/health'); $('#health').textContent = 'OK • ' + h.env; }catch(e){ $('#health').textContent = 'Unauthorized or down'; }
+    try{ const h = await req('/api/admin/health'); $('#health').textContent = 'OK • ' + h.env; }catch(e){ $('#health').textContent = 'Unauthorized or down'; return; }
     try{ const jobs = await req('/api/admin/jobs'); const tbody = $('#rows'); tbody.innerHTML='';
       (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML='<td><code>'+(j.id||'')+'</code></td><td>'+(j.status||'')+'</td><td>'+(j.templateId||'')+'</td><td>'+(j.createdAt||'')+'</td><td>'+
       '<button data-a="requeue" data-id="'+j.id+'">Requeue</button>'+
@@ -783,9 +783,10 @@ app.get('/admin', (req, res) => {
     if(a==='delete'){ if(confirm('Delete job '+id+'?')){ await req('/api/admin/jobs/'+id, { method:'DELETE' }); await load(); } }
   });
   document.getElementById('login').addEventListener('submit', async (e)=>{ e.preventDefault(); try { await req('/api/admin/login', { method:'POST', body: JSON.stringify({ password: $('#pwd').value }) }); await load(); } catch(err){ alert('Login failed'); } });
-  document.getElementById('logout').onclick = async ()=>{ try{ await req('/api/admin/logout', { method:'POST' }); $('#pwd').value=''; await load(); }catch{} };
+  document.getElementById('logout').onclick = async ()=>{ try{ await req('/api/admin/logout', { method:'POST' }); $('#pwd').value=''; $('#health').textContent = 'Not logged in'; $('#rows').innerHTML=''; }catch{} };
   $('#refresh').onclick = load;
-  load();
+  // Don't load data on page load - wait for login
+  $('#health').textContent = 'Not logged in';
   </script></body></html>`;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(html);
