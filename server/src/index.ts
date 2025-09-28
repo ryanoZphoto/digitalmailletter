@@ -175,6 +175,15 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           writeJobs(jobs);
           logger.info({ jobId: id }, 'Job saved to file store');
         }
+        
+        // Trigger immediate job processing
+        try {
+          const { processJobFromFile } = await import('./worker.js');
+          await processJobFromFile(job);
+          logger.info({ jobId: id }, 'Job processed immediately');
+        } catch (e) {
+          logger.warn({ jobId: id, err: String(e) }, 'Immediate processing failed, will be picked up by worker');
+        }
 
         // Send receipt email
         if (job.customerEmail) {
