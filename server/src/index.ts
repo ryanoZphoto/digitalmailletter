@@ -893,16 +893,15 @@ app.get('/admin', (req, res) => {
     try{ 
       const stats = await req('/api/admin/health'); 
       $('#stats').style.display = 'block';
-      $('#stats-content').innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
-          <div><strong>Total:</strong> ${stats.total}</div>
-          <div><strong>Completed:</strong> ${stats.completed}</div>
-          <div><strong>Failed:</strong> ${stats.failed}</div>
-          <div><strong>Processing:</strong> ${stats.processing}</div>
-          <div><strong>Submitted:</strong> ${stats.submitted}</div>
-          <div><strong>Last 24h:</strong> ${stats.last24h}</div>
-        </div>
-      `;
+      $('#stats-content').innerHTML = 
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">' +
+          '<div><strong>Total:</strong> ' + stats.total + '</div>' +
+          '<div><strong>Completed:</strong> ' + stats.completed + '</div>' +
+          '<div><strong>Failed:</strong> ' + stats.failed + '</div>' +
+          '<div><strong>Processing:</strong> ' + stats.processing + '</div>' +
+          '<div><strong>Submitted:</strong> ' + stats.submitted + '</div>' +
+          '<div><strong>Last 24h:</strong> ' + stats.last24h + '</div>' +
+        '</div>';
     }catch(e){ $('#stats').style.display = 'none'; }
     
     // Load errors
@@ -910,12 +909,12 @@ app.get('/admin', (req, res) => {
       const errors = await req('/api/admin/errors'); 
       if(errors.length > 0) {
         $('#errors').style.display = 'block';
-        $('#errors-content').innerHTML = errors.map(e => `
-          <div style="margin:8px 0;padding:8px;background:#991b1b;border-radius:4px">
-            <strong>${e.id}</strong> - ${e.status} (${new Date(e.createdAt).toLocaleString()})<br>
-            <small>${e.error}</small>
-          </div>
-        `).join('');
+        $('#errors-content').innerHTML = errors.map(e => 
+          '<div style="margin:8px 0;padding:8px;background:#991b1b;border-radius:4px">' +
+            '<strong>' + e.id + '</strong> - ' + e.status + ' (' + new Date(e.createdAt).toLocaleString() + ')<br>' +
+            '<small>' + e.error + '</small>' +
+          '</div>'
+        ).join('');
       } else {
         $('#errors').style.display = 'none';
       }
