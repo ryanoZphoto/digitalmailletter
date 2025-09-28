@@ -31,6 +31,7 @@ export default function App() {
   const [templateId, setTemplateId] = React.useState('tpl-default');
   const [messageContent, setMessageContent] = React.useState('');
   const [subject, setSubject] = React.useState('');
+  const [customerEmail, setCustomerEmail] = React.useState('');
   const [result, setResult] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
@@ -40,6 +41,13 @@ export default function App() {
     e.preventDefault();
     setIsSubmitting(true);
     setResult('');
+    
+    // Validate email
+    if (!customerEmail || !customerEmail.includes('@')) {
+      setResult('error: Please enter a valid email address');
+      setIsSubmitting(false);
+      return;
+    }
     try {
       const sender = {
         name: senderName,
@@ -64,7 +72,7 @@ export default function App() {
       // Prepare the body content with proper HTML formatting
       const bodyContent = messageContent.replace(/\n/g, '<br />');
       
-      const payload = { sender, recipient, templateId, serviceLevel: 'first_class', body: bodyContent, subject: subject || undefined };
+      const payload = { sender, recipient, templateId, serviceLevel: 'first_class', body: bodyContent, subject: subject || undefined, customerEmail };
       const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload }) });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');
@@ -731,6 +739,50 @@ Thank you for your time and consideration. I look forward to hearing from you so
                     </div>
                   </div>
                 </div>
+                </div>
+              </div>
+
+              {/* Customer Email Section */}
+              <div style={{ 
+                marginBottom: '25px',
+                padding: '20px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                backgroundColor: '#f0f9ff'
+              }}>
+                <h3 style={{ 
+                  margin: '0 0 12px 0', 
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1a365d',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  📧 Contact Information
+                </h3>
+                
+                <div>
+                  <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
+                    Your Email Address *
+                  </label>
+                  <input 
+                    type="email" 
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    style={{ 
+                      width: '100%', 
+                      padding: '8px 12px', 
+                      border: '1px solid #d1d5db', 
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
+                    We'll send you a confirmation and tracking information
+                  </p>
                 </div>
               </div>
 

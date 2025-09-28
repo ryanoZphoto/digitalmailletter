@@ -100,7 +100,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             events: [{ at: now, status: 'submitted' }]
           },
           stripeSessionId: session.id,
-          customerEmail: session.customer_email || session.customer_details?.email
+          customerEmail: payload.customerEmail || session.customer_email || session.customer_details?.email
         };
 
         // Save job
@@ -270,7 +270,7 @@ app.post('/api/checkout', async (req, res) => {
       line_items: [
         { price_data: { currency: 'usd', product_data: { name: 'Physical Letter' }, unit_amount: STRIPE_PRICE_CENTS }, quantity: 1 }
       ],
-      success_url: `${req.protocol}://${req.get('host')}?success=1&job={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.protocol}://${req.get('host')}?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.protocol}://${req.get('host')}?canceled=1`,
       metadata: { 
         templateId: payload.templateId || 'default',
