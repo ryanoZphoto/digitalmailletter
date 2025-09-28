@@ -411,6 +411,52 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
   return res.json(readJobs());
 });
 
+// Error monitoring endpoint
+app.get('/api/admin/errors', requireAdmin, async (req, res) => {
+  try {
+    const jobs = readJobs();
+    const failedJobs = (jobs as any[]).filter((job: any) => 
+      job.status === 'failed' || 
+      (job.tracking && job.tracking.events && 
+       job.tracking.events.some((e: any) => e.status === 'failed'))
+    );
+    
+    const errors = failedJobs.map((job: any) => ({
+      id: job.id,
+      createdAt: job.createdAt,
+      status: job.status,
+      error: job.error || 'Unknown error',
+      lastEvent: job.tracking?.events?.[job.tracking.events.length - 1] || null,
+      customerEmail: job.customerEmail
+    }));
+    
+    res.json(errors);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch errors' });
+  }
+});
+
+// System health endpoint
+app.get('/api/admin/health', requireAdmin, async (req, res) => {
+  try {
+    const jobs = readJobs();
+    const stats = {
+      total: jobs.length,
+      completed: jobs.filter((j: any) => j.status === 'completed').length,
+      failed: jobs.filter((j: any) => j.status === 'failed').length,
+      processing: jobs.filter((j: any) => j.status === 'processing').length,
+      submitted: jobs.filter((j: any) => j.status === 'submitted').length,
+      last24h: jobs.filter((j: any) => 
+        new Date(j.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+      ).length
+    };
+    
+    res.json(stats);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to fetch health stats' });
+  }
+});
+
 app.post('/api/admin/jobs/:id/requeue', requireAdmin, async (req, res) => {
   const { id } = req.params;
   const now = new Date().toISOString();
@@ -818,6 +864,17 @@ app.get('/admin', (req, res) => {
   <header><strong>Admin</strong> · <span id="health">loading…</span> <button id="refresh" style="margin-left:10px">Refresh</button></header>
   <main>
     <div style="margin:8px 0 16px 0"><form id="login" style="display:inline">Password: <input id="pwd" type="password" placeholder="Admin password" autocomplete="new-password" style="width:220px"> <button>Login</button></form> <button id="logout" style="margin-left:8px;background:#334155">Logout</button></div>
+    
+    <div id="stats" style="display:none;margin:16px 0;padding:16px;background:#1e293b;border-radius:8px">
+      <h3 style="margin-top:0">System Health</h3>
+      <div id="stats-content"></div>
+    </div>
+    
+    <div id="errors" style="display:none;margin:16px 0;padding:16px;background:#7f1d1d;border-radius:8px">
+      <h3 style="margin-top:0;color:#fca5a5">Recent Errors</h3>
+      <div id="errors-content"></div>
+    </div>
+    
     <h3>Jobs</h3>
     <table><thead><tr><th>Id</th><th>Status</th><th>Template</th><th>Created</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
     <p style="opacity:.8;margin-top:18px">Tip: Keep this page private. Token is stored in session only.</p>
@@ -831,10 +888,45 @@ app.get('/admin', (req, res) => {
   }
   async function load(){
     try{ const h = await req('/api/admin/health'); $('#health').textContent = 'OK • ' + h.env; }catch(e){ $('#health').textContent = 'Unauthorized or down'; return; }
+    
+    // Load system stats
+    try{ 
+      const stats = await req('/api/admin/health'); 
+      $('#stats').style.display = 'block';
+      $('#stats-content').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
+          <div><strong>Total:</strong> ${stats.total}</div>
+          <div><strong>Completed:</strong> ${stats.completed}</div>
+          <div><strong>Failed:</strong> ${stats.failed}</div>
+          <div><strong>Processing:</strong> ${stats.processing}</div>
+          <div><strong>Submitted:</strong> ${stats.submitted}</div>
+          <div><strong>Last 24h:</strong> ${stats.last24h}</div>
+        </div>
+      `;
+    }catch(e){ $('#stats').style.display = 'none'; }
+    
+    // Load errors
+    try{ 
+      const errors = await req('/api/admin/errors'); 
+      if(errors.length > 0) {
+        $('#errors').style.display = 'block';
+        $('#errors-content').innerHTML = errors.map(e => `
+          <div style="margin:8px 0;padding:8px;background:#991b1b;border-radius:4px">
+            <strong>${e.id}</strong> - ${e.status} (${new Date(e.createdAt).toLocaleString()})<br>
+            <small>${e.error}</small>
+          </div>
+        `).join('');
+      } else {
+        $('#errors').style.display = 'none';
+      }
+    }catch(e){ $('#errors').style.display = 'none'; }
+    
     try{ const jobs = await req('/api/admin/jobs'); const tbody = $('#rows'); tbody.innerHTML='';
-      (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML='<td><code>'+(j.id||'')+'</code></td><td>'+(j.status||'')+'</td><td>'+(j.templateId||'')+'</td><td>'+(j.createdAt||'')+'</td><td>'+
-      '<button data-a="requeue" data-id="'+j.id+'">Requeue</button>'+
-      '<button data-a="delete" data-id="'+j.id+'" style="background:#ef4444;margin-left:6px">Delete</button></td>'; tbody.appendChild(tr); });
+      (jobs||[]).forEach(j=>{ const tr=document.createElement('tr'); 
+        const statusColor = j.status === 'failed' ? '#ef4444' : j.status === 'completed' ? '#10b981' : j.status === 'processing' ? '#f59e0b' : '#6b7280';
+        tr.innerHTML='<td><code>'+(j.id||'')+'</code></td><td style="color:'+statusColor+'">'+(j.status||'')+'</td><td>'+(j.templateId||'')+'</td><td>'+(j.createdAt||'')+'</td><td>'+
+        '<button data-a="requeue" data-id="'+j.id+'">Requeue</button>'+
+        '<button data-a="delete" data-id="'+j.id+'" style="background:#ef4444;margin-left:6px">Delete</button></td>'; tbody.appendChild(tr); });
     }catch(e){ /* ignore */ }
   }
   document.addEventListener('click', async (e)=>{

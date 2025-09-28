@@ -146,13 +146,33 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ sessionId }) => {
         padding: '40px',
         boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
       }}>
-        {/* Success Header */}
+        {/* Dynamic Header based on status */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
-          <h1 style={{ color: '#2c3e50', marginBottom: '10px' }}>Letter Sent Successfully!</h1>
-          <p style={{ color: '#7f8c8d', fontSize: '18px' }}>
-            Your letter has been processed and will be delivered within 3-5 business days.
-          </p>
+          {jobData.status === 'completed' ? (
+            <>
+              <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
+              <h1 style={{ color: '#2c3e50', marginBottom: '10px' }}>Letter Sent Successfully!</h1>
+              <p style={{ color: '#7f8c8d', fontSize: '18px' }}>
+                Your letter has been processed and will be delivered within 3-5 business days.
+              </p>
+            </>
+          ) : jobData.status === 'failed' ? (
+            <>
+              <div style={{ fontSize: '64px', marginBottom: '20px' }}>❌</div>
+              <h1 style={{ color: '#e74c3c', marginBottom: '10px' }}>Letter Processing Failed</h1>
+              <p style={{ color: '#7f8c8d', fontSize: '18px' }}>
+                We encountered an issue processing your letter. Please contact support for assistance.
+              </p>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
+              <h1 style={{ color: '#f39c12', marginBottom: '10px' }}>Processing Your Letter</h1>
+              <p style={{ color: '#7f8c8d', fontSize: '18px' }}>
+                Your letter is being processed. You'll receive updates as it progresses.
+              </p>
+            </>
+          )}
         </div>
 
         {/* Confirmation Details */}

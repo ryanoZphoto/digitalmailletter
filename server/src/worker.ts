@@ -94,6 +94,16 @@ async function processJobFromFile(job: any) {
   } catch (error) {
     console.error('Error processing job from file store:', job.id, error);
     job.status = 'failed';
+    job.error = String(error);
+    
+    // Add error event to tracking
+    if (!job.tracking) job.tracking = { provider: 'pending', code: '', events: [] };
+    job.tracking.events.push({
+      at: new Date().toISOString(),
+      status: 'failed',
+      details: String(error)
+    });
+    
     const jobs = readJobs();
     const jobIndex = (jobs as any[]).findIndex((j: any) => j.id === job.id);
     if (jobIndex >= 0) {
