@@ -49,12 +49,27 @@ app.use((req, res, next) => {
 // Define it BEFORE the JSON parser so the raw body is preserved for this route.
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
+    logger.info('Webhook received', { 
+      hasStripe: !!stripe, 
+      hasSignature: !!req.headers['stripe-signature'],
+      bodyLength: req.body?.length 
+    });
+    
     if (!stripe) return res.status(503).end();
     const sig = req.headers['stripe-signature'] as string;
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
-    const event = endpointSecret
-      ? stripe.webhooks.constructEvent(req.body as Buffer, sig, endpointSecret)
-      : (JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body)) as any);
+    
+    let event: any;
+    try {
+      event = endpointSecret
+        ? stripe.webhooks.constructEvent(req.body as Buffer, sig, endpointSecret)
+        : (JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body)) as any);
+    } catch (webhookError) {
+      logger.error('Webhook signature verification failed', { error: String(webhookError) });
+      return res.status(400).send('Webhook signature verification failed');
+    }
+    
+    logger.info('Webhook event type', { type: event?.type });
     
     if ((event as any).type === 'checkout.session.completed') {
       const session = (event as any).data.object as any;
@@ -104,6 +119,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         };
 
         // Save job
+        logger.info('Creating job', { jobId: id, sessionId: session.id });
         const { init } = await import('./db.js');
         const { prisma, connected } = await init();
         
@@ -112,15 +128,18 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             await prisma.job.create({ data: job });
             logger.info({ jobId: id, sessionId: session.id }, 'Job created in database');
           } catch (e) {
-            logger.warn({ err: String(e) }, 'DB write failed, falling back to file');
+            logger.error({ err: String(e), jobId: id }, 'DB write failed, falling back to file');
             const jobs = readJobs();
             jobs.push(job);
             writeJobs(jobs);
+            logger.info({ jobId: id }, 'Job saved to file store');
           }
         } else {
+          logger.warn('Database not connected, using file store');
           const jobs = readJobs();
           jobs.push(job);
           writeJobs(jobs);
+          logger.info({ jobId: id }, 'Job saved to file store');
         }
 
         // Send receipt email
