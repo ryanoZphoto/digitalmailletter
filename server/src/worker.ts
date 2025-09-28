@@ -3,6 +3,7 @@ import Handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readJobs, writeJobs } from './store.js';
 
 dotenv.config();
 
