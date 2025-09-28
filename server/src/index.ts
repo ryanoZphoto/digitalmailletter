@@ -990,6 +990,20 @@ try {
 
 app.use(express.static(publicPath));
 
+// Serve sitemap.xml with correct content-type
+app.get('/sitemap.xml', (req, res) => {
+  const sitemapPath = path.join(__dirname, 'sitemap.xml');
+  res.setHeader('Content-Type', 'application/xml');
+  res.sendFile(sitemapPath);
+});
+
+// Serve robots.txt
+app.get('/robots.txt', (req, res) => {
+  const robotsPath = path.join(__dirname, 'robots.txt');
+  res.setHeader('Content-Type', 'text/plain');
+  res.sendFile(robotsPath);
+});
+
 // Serve React app for all non-API routes (catch-all)
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
