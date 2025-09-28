@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://digitalmailletter.com/sitemap.xml
+
+# Crawl-delay (optional, helps prevent overloading your server)
+Crawl-delay: 1
