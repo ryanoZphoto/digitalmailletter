@@ -177,4 +177,5 @@ if (process.env.NODE_ENV !== 'test') {
   pollLoop();
 }
 
-export default { processJob, pollLoop };
+export { processJobFromFile };
+export default { processJob, pollLoop, processJobFromFile };
