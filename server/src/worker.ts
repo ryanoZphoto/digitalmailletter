@@ -46,6 +46,62 @@ async function initPrisma() {
   }
 }
 
+async function processJobFromFile(job: any) {
+  try {
+    console.log('Processing job from file store:', job.id);
+    
+    // Update job status to processing
+    job.status = 'processing';
+    const jobs = readJobs();
+    const jobIndex = (jobs as any[]).findIndex((j: any) => j.id === job.id);
+    if (jobIndex >= 0) {
+      jobs[jobIndex] = job;
+      writeJobs(jobs);
+    }
+
+    // Process the job using Lob API
+    const template = await loadTemplate(job.templateId || 'letter');
+    let data: any = {};
+    if (job.body) {
+      try {
+        data = JSON.parse(job.body as unknown as string);
+      } catch {
+        data = { body: job.body };
+      }
+    }
+
+    const html = template({ ...data, sender: job.sender, recipient: job.recipient });
+    const pdfUint8 = await htmlToPdfBuffer(html);
+    const pdf = Buffer.from(pdfUint8);
+
+    const to = job.recipient as any;
+    const from = job.sender as any;
+
+    const tracking = await lob.sendLetterPDF({ to, from, pdfBuffer: pdf, description: (job.templateId ?? undefined) as any });
+    
+    // Update job status to completed
+    job.status = 'completed';
+    job.tracking = tracking;
+    
+    // Save updated job
+    if (jobIndex >= 0) {
+      jobs[jobIndex] = job;
+      writeJobs(jobs);
+    }
+    
+    console.log('Job processed from file store:', job.id, job.status);
+  } catch (error) {
+    console.error('Error processing job from file store:', job.id, error);
+    job.status = 'failed';
+    const jobs = readJobs();
+    const jobIndex = (jobs as any[]).findIndex((j: any) => j.id === job.id);
+    if (jobIndex >= 0) {
+      jobs[jobIndex] = job;
+      writeJobs(jobs);
+    }
+  }
+}
+
 async function processJob(jobId: string) {
   const prismaClient = await initPrisma();
   if (!prismaClient) {
@@ -92,7 +148,17 @@ async function processJob(jobId: string) {
 async function pollLoop() {
   const prismaClient = await initPrisma();
   if (!prismaClient) {
-    console.log('Worker using file store - polling disabled');
+    console.log('Worker using file store - polling enabled');
+    // Process jobs from file store
+    try {
+      const jobs = readJobs();
+      const pendingJobs = (jobs as any[]).filter((j: any) => j.status === 'submitted');
+      for (const job of pendingJobs) {
+        await processJobFromFile(job);
+      }
+    } catch (e) {
+      console.error('File store polling error:', e);
+    }
     return;
   }
   
