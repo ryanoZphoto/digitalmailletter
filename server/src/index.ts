@@ -243,6 +243,20 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
+// Test PDF generation endpoint
+app.get('/api/test-pdf', async (req, res) => {
+  try {
+    const { htmlToPdfBuffer } = await import('./pdf.js');
+    const testHtml = '<html><body><h1>Test PDF</h1><p>This is a test PDF generation.</p></body></html>';
+    const pdfBuffer = await htmlToPdfBuffer(testHtml);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="test.pdf"');
+    res.send(pdfBuffer);
+  } catch (error) {
+    res.status(500).json({ error: 'PDF generation failed', details: String(error) });
+  }
+});
+
 // ----- Payments (Stripe Checkout) -----
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PRICE_CENTS = Number(process.env.PRICE_CENTS || 250);

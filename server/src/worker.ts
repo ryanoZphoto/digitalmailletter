@@ -72,8 +72,35 @@ async function processJobFromFile(job: any) {
     }
 
     const html = template({ ...data, sender: job.sender, recipient: job.recipient });
-    const pdfUint8 = await htmlToPdfBuffer(html);
-    const pdf = Buffer.from(pdfUint8);
+    
+    let pdf: Buffer;
+    try {
+      const pdfUint8 = await htmlToPdfBuffer(html);
+      pdf = Buffer.from(pdfUint8);
+    } catch (pdfError) {
+      console.error('PDF generation failed, using fallback:', pdfError);
+      // Fallback: Create a simple text-based PDF or use a basic HTML template
+      const fallbackHtml = `
+        <html>
+          <head><title>Letter</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Letter from ${job.sender?.name || 'Unknown'}</h2>
+            <p><strong>To:</strong> ${job.recipient?.name || 'Unknown'}</p>
+            <p><strong>Address:</strong> ${job.recipient?.address_line1 || ''} ${job.recipient?.address_city || ''}, ${job.recipient?.address_state || ''} ${job.recipient?.address_zip || ''}</p>
+            <hr>
+            <div>${data.body || 'Letter content'}</div>
+          </body>
+        </html>
+      `;
+      
+      try {
+        const fallbackPdf = await htmlToPdfBuffer(fallbackHtml);
+        pdf = Buffer.from(fallbackPdf);
+      } catch (fallbackError) {
+        console.error('Fallback PDF generation also failed:', fallbackError);
+        throw new Error('PDF generation completely failed: ' + String(pdfError));
+      }
+    }
 
     const to = job.recipient as any;
     const from = job.sender as any;
