@@ -43,6 +43,11 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ sessionId }) => {
       if (response.ok) {
         const data = await response.json();
         setJobData(data);
+        
+        // If job is still submitted/processing, start polling for updates
+        if (data.status === 'submitted' || data.status === 'processing') {
+          startPolling(sessionId);
+        }
       } else {
         setError('Job not found. Please contact support.');
       }
@@ -51,6 +56,30 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ sessionId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const startPolling = (sessionId: string) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/jobs/by-session/${sessionId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setJobData(data);
+          
+          // Stop polling when job is completed or failed
+          if (data.status === 'completed' || data.status === 'failed') {
+            clearInterval(pollInterval);
+          }
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Clean up polling after 5 minutes
+    setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 300000);
   };
 
   if (loading) {
@@ -136,8 +165,33 @@ const SuccessPage: React.FC<SuccessPageProps> = ({ sessionId }) => {
             <div style={{ display: 'grid', gap: '20px', marginBottom: '30px' }}>
               <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
                 <h3 style={{ color: '#2c3e50', marginBottom: '10px' }}>Tracking Information</h3>
-                <p><strong>Tracking Code:</strong> <code style={{ background: '#e9ecef', padding: '4px 8px', borderRadius: '4px' }}>{jobData.tracking.code}</code></p>
-                <p><strong>Status:</strong> <span style={{ color: '#27ae60', fontWeight: 'bold' }}>{jobData.status.toUpperCase()}</span></p>
+                <p><strong>Tracking Code:</strong> 
+                  {jobData.tracking.provider === 'mock' ? (
+                    <span style={{ color: '#ff6b6b' }}>
+                      <code style={{ background: '#ffe6e6', padding: '4px 8px', borderRadius: '4px' }}>
+                        {jobData.tracking.code}
+                      </code>
+                      <br />
+                      <small style={{ fontSize: '12px' }}>Processing... Real tracking code will appear shortly</small>
+                    </span>
+                  ) : (
+                    <code style={{ background: '#e9ecef', padding: '4px 8px', borderRadius: '4px' }}>
+                      {jobData.tracking.code}
+                    </code>
+                  )}
+                </p>
+                <p><strong>Status:</strong> 
+                  <span style={{ 
+                    color: jobData.status === 'completed' ? '#27ae60' : 
+                           jobData.status === 'failed' ? '#e74c3c' : 
+                           jobData.status === 'processing' ? '#f39c12' : '#3498db',
+                    fontWeight: 'bold' 
+                  }}>
+                    {jobData.status.toUpperCase()}
+                    {jobData.status === 'submitted' && ' - Processing your letter...'}
+                    {jobData.status === 'processing' && ' - Sending via Lob API...'}
+                  </span>
+                </p>
                 <p><strong>Order Date:</strong> {new Date(jobData.createdAt).toLocaleDateString()}</p>
               </div>
 
