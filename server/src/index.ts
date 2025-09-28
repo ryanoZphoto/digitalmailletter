@@ -11,6 +11,7 @@ import { validateAddressFields, toAlpha2, initCountries } from './address.js';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import Stripe from 'stripe';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -54,15 +55,81 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     const event = endpointSecret
       ? stripe.webhooks.constructEvent(req.body as Buffer, sig, endpointSecret)
       : (JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body)) as any);
+    
     if ((event as any).type === 'checkout.session.completed') {
       const session = (event as any).data.object as any;
       const payload = JSON.parse(session.metadata?.payload || '{}');
-      // Reuse the same job creation endpoint to keep logic in one place
-      return (app as any)._router.handle(
-        { ...req, method: 'POST', url: '/api/letters', headers: { ...req.headers, 'content-type': 'application/json' }, body: payload },
-        res,
-        () => {}
-      );
+      
+      if (payload) {
+        // Create job directly
+        const id = nanoid(12);
+        const now = new Date().toISOString();
+        
+        // Normalize addresses
+        const normalizeAddress = (a: any) => {
+          if (a.address_line1) {
+            const country = toAlpha2(a.address_country || 'US');
+            return {
+              name: a.name || '',
+              address_line1: a.address_line1 || '',
+              address_line2: a.address_line2 || '',
+              address_city: a.address_city || '',
+              address_state: a.address_state || '',
+              address_zip: a.address_zip || '',
+              address_country: country
+            };
+          }
+          return { name: a.name || '', address: a.address || '' };
+        };
+
+        const job = {
+          id,
+          createdAt: now,
+          status: 'submitted',
+          templateId: payload.templateId || 'tpl-default',
+          body: payload.body || '',
+          subject: payload.subject || '',
+          fields: payload.fields || {},
+          sender: normalizeAddress(payload.sender),
+          recipient: normalizeAddress(payload.recipient),
+          serviceLevel: payload.serviceLevel || 'first_class',
+          options: payload.options || [],
+          tracking: {
+            provider: 'mock',
+            code: 'T' + id.toUpperCase(),
+            events: [{ at: now, status: 'submitted' }]
+          },
+          stripeSessionId: session.id,
+          customerEmail: session.customer_email || session.customer_details?.email
+        };
+
+        // Save job
+        const { init } = await import('./db.js');
+        const { prisma, connected } = await init();
+        
+        if (connected && prisma) {
+          try {
+            await prisma.job.create({ data: job });
+            logger.info({ jobId: id, sessionId: session.id }, 'Job created in database');
+          } catch (e) {
+            logger.warn({ err: String(e) }, 'DB write failed, falling back to file');
+            const jobs = readJobs();
+            jobs.push(job);
+            writeJobs(jobs);
+          }
+        } else {
+          const jobs = readJobs();
+          jobs.push(job);
+          writeJobs(jobs);
+        }
+
+        // Send receipt email
+        if (job.customerEmail) {
+          await sendReceiptEmail(job, job.customerEmail);
+        }
+
+        logger.info({ sessionId: session.id, jobId: id }, 'Job created from Stripe webhook');
+      }
     }
     res.json({ received: true });
   } catch (err) {
@@ -118,6 +185,79 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PRICE_CENTS = Number(process.env.PRICE_CENTS || 250);
 const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' }) : (null as any);
+
+// Email configuration
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@digitalmailletter.com';
+
+const transporter = EMAIL_USER && EMAIL_PASS ? nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS
+  }
+}) : null;
+
+// Email receipt function
+async function sendReceiptEmail(job: any, customerEmail: string) {
+  if (!transporter) {
+    logger.warn('Email not configured, skipping receipt email');
+    return;
+  }
+
+  try {
+    const mailOptions = {
+      from: EMAIL_FROM,
+      to: customerEmail,
+      subject: `Letter Confirmation - ${job.tracking.code}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2c3e50;">✅ Your Letter Has Been Sent!</h2>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Confirmation Details</h3>
+            <p><strong>Tracking Code:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px;">${job.tracking.code}</code></p>
+            <p><strong>Status:</strong> <span style="color: #27ae60; font-weight: bold;">${job.status.toUpperCase()}</span></p>
+            <p><strong>Order Date:</strong> ${new Date(job.createdAt).toLocaleDateString()}</p>
+          </div>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>From</h3>
+            <p><strong>${job.sender.name}</strong></p>
+            <p>${job.sender.address_line1}</p>
+            <p>${job.sender.address_city}, ${job.sender.address_state} ${job.sender.address_zip}</p>
+          </div>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>To</h3>
+            <p><strong>${job.recipient.name}</strong></p>
+            <p>${job.recipient.address_line1}</p>
+            <p>${job.recipient.address_city}, ${job.recipient.address_state} ${job.recipient.address_zip}</p>
+          </div>
+
+          <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>What happens next?</h3>
+            <ul>
+              <li>Your letter will be printed and prepared for mailing within 24 hours</li>
+              <li>It will be sent via USPS First Class Mail</li>
+              <li>Delivery typically takes 3-5 business days</li>
+            </ul>
+          </div>
+
+          <p style="color: #7f8c8d; font-size: 14px;">
+            Thank you for using Digital Mail Letter! If you have any questions, please contact support.
+          </p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    logger.info({ jobId: job.id, email: customerEmail }, 'Receipt email sent');
+  } catch (error) {
+    logger.error({ error: String(error), jobId: job.id }, 'Failed to send receipt email');
+  }
+}
 
 app.post('/api/checkout', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
@@ -380,6 +520,34 @@ app.get('/api/jobs', async (req, res) => {
     }
   }
   return res.json(readJobs());
+});
+
+// Get job by Stripe session ID
+app.get('/api/jobs/by-session/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+  
+  // Import db init conditionally
+  const { init } = await import('./db.js');
+  const { prisma, connected } = await init();
+  
+  if (connected && prisma) {
+    try {
+      const job = await prisma.job.findFirst({ 
+        where: { stripeSessionId: sessionId },
+        orderBy: { createdAt: 'desc' }
+      });
+      if (job) return res.json(job);
+    } catch (e) {
+      logger.warn({ err: String(e) }, 'DB read failed, falling back to file');
+    }
+  }
+  
+  // Fallback to file store
+  const jobs = readJobs();
+  const job = (jobs as any[]).find((j: any) => j.stripeSessionId === sessionId);
+  if (job) return res.json(job);
+  
+  return res.status(404).json({ error: 'Job not found' });
 });
 
 // Template preview endpoint

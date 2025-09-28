@@ -1,6 +1,15 @@
 import React from 'react'
+import SuccessPage from './SuccessPage'
 
 export default function App() {
+  // Check if we're on success page
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionId = urlParams.get('session_id');
+  const success = urlParams.get('success');
+  
+  if (success === '1' && sessionId) {
+    return <SuccessPage sessionId={sessionId} />;
+  }
   // Sender fields
   const [senderName, setSenderName] = React.useState('');
   const [senderLine1, setSenderLine1] = React.useState('');
