@@ -182,103 +182,105 @@ Thank you for your time and consideration. I look forward to hearing from you so
       </div>
 
       {/* Hero Section */}
-      <div style={{ 
-        background: 'rgba(255,255,255,0.95)', 
-        padding: '60px 20px',
+      <div style={{
+        background: 'rgba(255,255,255,0.95)',
+        padding: '40px 20px',
         textAlign: 'center' as const
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ 
-            fontSize: '42px', 
-            margin: '0 0 20px 0', 
+          <h2 style={{
+            fontSize: '32px',
+            margin: '0 0 15px 0',
             fontWeight: '700',
             color: '#2d3748'
           }}>
             Send Physical Letters with Ease
           </h2>
-          <p style={{ 
-            fontSize: '20px', 
-            color: '#4a5568', 
-            margin: '0 0 40px 0',
-            lineHeight: '1.6'
+          <p style={{
+            fontSize: '16px',
+            color: '#4a5568',
+            margin: '0 0 25px 0',
+            lineHeight: '1.5'
           }}>
-            We print, stamp, and mail your letters for you. Perfect for businesses, legal notices, 
+            We print, stamp, and mail your letters for you. Perfect for businesses, legal notices,
             personal correspondence, and any situation where a physical letter is required.
           </p>
-          
+
           {/* Features - Horizontal Layout */}
-          <div style={{ 
-            display: 'flex', 
+          <div style={{
+            display: 'flex',
             justifyContent: 'space-around',
             flexWrap: 'wrap',
-            gap: '15px',
-            margin: '30px 0',
-            padding: '20px',
+            gap: '10px',
+            margin: '20px 0',
+            padding: '15px',
             background: '#f8fafc',
-            borderRadius: '12px'
+            borderRadius: '8px'
           }}>
-            <div style={{ textAlign: 'center' as const, minWidth: '150px', flex: '1' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>🖨️</div>
-              <h3 style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '600' }}>Professional Printing</h3>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>High-quality letterhead</p>
+            <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
+              <div style={{ fontSize: '24px', marginBottom: '6px' }}>🖨️</div>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Professional Printing</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>High-quality letterhead</p>
             </div>
-            <div style={{ textAlign: 'center' as const, minWidth: '150px', flex: '1' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📬</div>
-              <h3 style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '600' }}>Real Mail Delivery</h3>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>USPS handling</p>
+            <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
+              <div style={{ fontSize: '24px', marginBottom: '6px' }}>📬</div>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Real Mail Delivery</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>USPS handling</p>
             </div>
-            <div style={{ textAlign: 'center' as const, minWidth: '150px', flex: '1' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div>
-              <h3 style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '600' }}>Tracking & Status</h3>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Full visibility</p>
+            <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
+              <div style={{ fontSize: '24px', marginBottom: '6px' }}>📊</div>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Tracking & Status</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Full visibility</p>
             </div>
-            <div style={{ textAlign: 'center' as const, minWidth: '150px', flex: '1' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚡</div>
-              <h3 style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '600' }}>Fast Turnaround</h3>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Same-day processing</p>
+            <div style={{ textAlign: 'center' as const, minWidth: '120px', flex: '1' }}>
+              <div style={{ fontSize: '24px', marginBottom: '6px' }}>⚡</div>
+              <h3 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '600' }}>Fast Turnaround</h3>
+              <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>Same-day processing</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Form Section */}
-      <div style={{ 
-        background: '#f8fafc', 
-        padding: '10px 20px 40px 20px'
+      <div style={{
+        background: '#f8fafc',
+        padding: '5px 20px 20px 20px',
+        marginTop: '-10px'
       }}>
         <div style={{ width: '100%', margin: '0' }}>
           <div style={{
             background: 'white',
             borderRadius: '8px',
-            padding: '25px',
+            padding: '20px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-            width: '100%'
+            width: '100%',
+            marginTop: '5px'
           }}>
-            <div style={{ textAlign: 'center' as const, marginBottom: '20px' }}>
-              <h2 style={{ 
-                fontSize: '24px', 
-                margin: '0 0 8px 0', 
+            <div style={{ textAlign: 'center' as const, marginBottom: '15px' }}>
+              <h2 style={{
+                fontSize: '20px',
+                margin: '0 0 6px 0',
                 fontWeight: '600',
                 color: '#2d3748'
               }}>
                 Send Your Letter
               </h2>
-              <p style={{ 
-                fontSize: '14px', 
-                color: '#666', 
-                margin: '0 0 15px 0'
+              <p style={{
+                fontSize: '12px',
+                color: '#666',
+                margin: '0 0 10px 0'
               }}>
                 Fill out the form below to send a professional letter. We'll print and mail it for you.
               </p>
-              <button 
+              <button
                 onClick={fillDemoData}
-                style={{ 
-                  background: '#e2e8f0', 
+                style={{
+                  background: '#e2e8f0',
                   color: '#4a5568',
-                  border: 'none', 
-                  padding: '8px 16px', 
-                  borderRadius: '6px', 
-                  fontSize: '14px',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   fontWeight: '500'
                 }}
@@ -509,20 +511,73 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
                           State *
                         </label>
-                        <input 
+                        <select 
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
                             border: '1px solid #d1d5db', 
                             borderRadius: '4px',
                             fontSize: '14px',
-                            outline: 'none'
+                            outline: 'none',
+                            background: 'white'
                           }}
                           value={senderState} 
                           onChange={e => setSenderState(e.target.value)} 
-                          placeholder="CA"
-                          required 
-                        />
+                          required
+                        >
+                          <option value="">Select State</option>
+                          <option value="AL">Alabama</option>
+                          <option value="AK">Alaska</option>
+                          <option value="AZ">Arizona</option>
+                          <option value="AR">Arkansas</option>
+                          <option value="CA">California</option>
+                          <option value="CO">Colorado</option>
+                          <option value="CT">Connecticut</option>
+                          <option value="DE">Delaware</option>
+                          <option value="FL">Florida</option>
+                          <option value="GA">Georgia</option>
+                          <option value="HI">Hawaii</option>
+                          <option value="ID">Idaho</option>
+                          <option value="IL">Illinois</option>
+                          <option value="IN">Indiana</option>
+                          <option value="IA">Iowa</option>
+                          <option value="KS">Kansas</option>
+                          <option value="KY">Kentucky</option>
+                          <option value="LA">Louisiana</option>
+                          <option value="ME">Maine</option>
+                          <option value="MD">Maryland</option>
+                          <option value="MA">Massachusetts</option>
+                          <option value="MI">Michigan</option>
+                          <option value="MN">Minnesota</option>
+                          <option value="MS">Mississippi</option>
+                          <option value="MO">Missouri</option>
+                          <option value="MT">Montana</option>
+                          <option value="NE">Nebraska</option>
+                          <option value="NV">Nevada</option>
+                          <option value="NH">New Hampshire</option>
+                          <option value="NJ">New Jersey</option>
+                          <option value="NM">New Mexico</option>
+                          <option value="NY">New York</option>
+                          <option value="NC">North Carolina</option>
+                          <option value="ND">North Dakota</option>
+                          <option value="OH">Ohio</option>
+                          <option value="OK">Oklahoma</option>
+                          <option value="OR">Oregon</option>
+                          <option value="PA">Pennsylvania</option>
+                          <option value="RI">Rhode Island</option>
+                          <option value="SC">South Carolina</option>
+                          <option value="SD">South Dakota</option>
+                          <option value="TN">Tennessee</option>
+                          <option value="TX">Texas</option>
+                          <option value="UT">Utah</option>
+                          <option value="VT">Vermont</option>
+                          <option value="VA">Virginia</option>
+                          <option value="WA">Washington</option>
+                          <option value="WV">West Virginia</option>
+                          <option value="WI">Wisconsin</option>
+                          <option value="WY">Wyoming</option>
+                          <option value="DC">District of Columbia</option>
+                        </select>
                       </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
@@ -678,20 +733,73 @@ Thank you for your time and consideration. I look forward to hearing from you so
                         <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>
                           State *
                         </label>
-                        <input 
+                        <select 
                           style={{ 
                             width: '100%', 
                             padding: '8px', 
                             border: '1px solid #d1d5db', 
                             borderRadius: '4px',
                             fontSize: '14px',
-                            outline: 'none'
+                            outline: 'none',
+                            background: 'white'
                           }}
                           value={recipientState} 
                           onChange={e => setRecipientState(e.target.value)} 
-                          placeholder="NY"
-                          required 
-                        />
+                          required
+                        >
+                          <option value="">Select State</option>
+                          <option value="AL">Alabama</option>
+                          <option value="AK">Alaska</option>
+                          <option value="AZ">Arizona</option>
+                          <option value="AR">Arkansas</option>
+                          <option value="CA">California</option>
+                          <option value="CO">Colorado</option>
+                          <option value="CT">Connecticut</option>
+                          <option value="DE">Delaware</option>
+                          <option value="FL">Florida</option>
+                          <option value="GA">Georgia</option>
+                          <option value="HI">Hawaii</option>
+                          <option value="ID">Idaho</option>
+                          <option value="IL">Illinois</option>
+                          <option value="IN">Indiana</option>
+                          <option value="IA">Iowa</option>
+                          <option value="KS">Kansas</option>
+                          <option value="KY">Kentucky</option>
+                          <option value="LA">Louisiana</option>
+                          <option value="ME">Maine</option>
+                          <option value="MD">Maryland</option>
+                          <option value="MA">Massachusetts</option>
+                          <option value="MI">Michigan</option>
+                          <option value="MN">Minnesota</option>
+                          <option value="MS">Mississippi</option>
+                          <option value="MO">Missouri</option>
+                          <option value="MT">Montana</option>
+                          <option value="NE">Nebraska</option>
+                          <option value="NV">Nevada</option>
+                          <option value="NH">New Hampshire</option>
+                          <option value="NJ">New Jersey</option>
+                          <option value="NM">New Mexico</option>
+                          <option value="NY">New York</option>
+                          <option value="NC">North Carolina</option>
+                          <option value="ND">North Dakota</option>
+                          <option value="OH">Ohio</option>
+                          <option value="OK">Oklahoma</option>
+                          <option value="OR">Oregon</option>
+                          <option value="PA">Pennsylvania</option>
+                          <option value="RI">Rhode Island</option>
+                          <option value="SC">South Carolina</option>
+                          <option value="SD">South Dakota</option>
+                          <option value="TN">Tennessee</option>
+                          <option value="TX">Texas</option>
+                          <option value="UT">Utah</option>
+                          <option value="VT">Vermont</option>
+                          <option value="VA">Virginia</option>
+                          <option value="WA">Washington</option>
+                          <option value="WV">West Virginia</option>
+                          <option value="WI">Wisconsin</option>
+                          <option value="WY">Wyoming</option>
+                          <option value="DC">District of Columbia</option>
+                        </select>
                       </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '3px', fontWeight: '500', color: '#374151', fontSize: '13px' }}>

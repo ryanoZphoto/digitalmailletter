@@ -78,6 +78,9 @@ export async function sendLetterPDF({
   // Use string values because form-data serializes them as fields.
   form.append('color', process.env.LOB_DEFAULT_COLOR || 'true');
 
+  // Lob requires a 'use_type' parameter - must be "marketing" or "operational"
+  form.append('use_type', 'operational');
+
   // 'file' is a Node Buffer
   form.append('file', pdfBuffer, { filename: 'letter.pdf', contentType: 'application/pdf' });
 

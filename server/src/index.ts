@@ -272,8 +272,16 @@ const transporter = EMAIL_USER && EMAIL_PASS ? nodemailer.createTransport({
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS
+  },
+  // More reliable configuration
+  connectionTimeout: 30000, // 30 seconds
+  greetingTimeout: 15000,   // 15 seconds
+  socketTimeout: 30000,     // 30 seconds
+  pool: false, // Disable pooling for reliability
+  tls: {
+    rejectUnauthorized: false
   }
-}) : null;
+} as any) : null;
 
 // Email receipt function
 async function sendReceiptEmail(job: any, customerEmail: string) {
@@ -286,14 +294,14 @@ async function sendReceiptEmail(job: any, customerEmail: string) {
     const mailOptions = {
       from: EMAIL_FROM,
       to: customerEmail,
-      subject: `Letter Confirmation - ${job.tracking.code}`,
+      subject: `Letter Confirmation - ${job.tracking.code || 'Processing'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2c3e50;">✅ Your Letter Has Been Sent!</h2>
           
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3>Confirmation Details</h3>
-            <p><strong>Tracking Code:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px;">${job.tracking.code}</code></p>
+            <p><strong>Tracking Code:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px;">${job.tracking.code || 'Processing...'}</code></p>
             <p><strong>Status:</strong> <span style="color: #27ae60; font-weight: bold;">${job.status.toUpperCase()}</span></p>
             <p><strong>Order Date:</strong> ${new Date(job.createdAt).toLocaleDateString()}</p>
           </div>
@@ -328,10 +336,17 @@ async function sendReceiptEmail(job: any, customerEmail: string) {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email with timeout handling
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email timeout')), 15000)
+    );
+    
+    await Promise.race([emailPromise, timeoutPromise]);
     logger.info({ jobId: job.id, email: customerEmail }, 'Receipt email sent');
   } catch (error) {
     logger.error({ error: String(error), jobId: job.id }, 'Failed to send receipt email');
+    // Don't throw - email failure shouldn't break the job
   }
 }
 
