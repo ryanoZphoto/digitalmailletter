@@ -73,9 +73,28 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     
     if ((event as any).type === 'checkout.session.completed') {
       const session = (event as any).data.object as any;
-      const payload = JSON.parse(session.metadata?.payload || '{}');
       
-      if (payload) {
+      // Handle both payload format and individual metadata fields
+      let payload: any = {};
+      if (session.metadata?.payload) {
+        try {
+          payload = JSON.parse(session.metadata.payload);
+        } catch (e) {
+          logger.warn('Failed to parse payload from metadata', { error: String(e) });
+        }
+      } else if (session.metadata) {
+        // Use individual metadata fields as fallback
+        payload = {
+          templateId: session.metadata.templateId || 'tpl-default',
+          sender: { name: session.metadata.sender || '' },
+          recipient: { name: session.metadata.recipient || '' },
+          body: session.metadata.body || '',
+          subject: session.metadata.subject || '',
+          customerEmail: session.customer_details?.email || session.customer_email
+        };
+      }
+      
+      if (payload && (payload.templateId || payload.sender || payload.recipient)) {
         // Create job directly
         const id = nanoid(12);
         const now = new Date().toISOString();
@@ -105,8 +124,8 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           body: payload.body || '',
           subject: payload.subject || '',
           fields: payload.fields || {},
-          sender: normalizeAddress(payload.sender),
-          recipient: normalizeAddress(payload.recipient),
+          sender: payload.sender?.address_line1 ? normalizeAddress(payload.sender) : { name: payload.sender?.name || '', address: '' },
+          recipient: payload.recipient?.address_line1 ? normalizeAddress(payload.recipient) : { name: payload.recipient?.name || '', address: '' },
           serviceLevel: payload.serviceLevel || 'first_class',
           options: payload.options || [],
           tracking: {
