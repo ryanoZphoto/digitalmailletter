@@ -10,7 +10,7 @@ dotenv.config();
 // Import PrismaClient conditionally to avoid crashes when DATABASE_URL is invalid
 let prisma: any = null;
 
-import lob, { sendViaTemplate } from './providers/lob.js';
+import lob, { sendViaTemplate, lobInline } from './providers/lob.js';
 import { htmlToPdfBuffer } from './pdf.js';
 
 const WORKER_CONCURRENCY = Number(process.env.WORKER_CONCURRENCY || 2);
@@ -74,19 +74,38 @@ async function processJobFromFile(job: any) {
       const to = job.recipient as any;
       const from = job.sender as any;
       const merge = (job.body ? (JSON.parse(job.body || '{}')) : {}) as any;
-      const tracking = await sendViaTemplate({
-        resource,
-        to,
-        from,
-        template: mapping.lob.file ? { file: mapping.lob.file } : undefined,
-        postcardTemplates: mapping.lob.front && mapping.lob.back ? { front: mapping.lob.front, back: mapping.lob.back } : undefined,
-        selfMailerTemplates: mapping.lob.inside && mapping.lob.outside ? { inside: mapping.lob.inside, outside: mapping.lob.outside } : undefined,
-        mergeVariables: merge,
-        color: Array.isArray(job.options) && job.options.includes('color'),
-        doubleSided: Array.isArray(job.options) && job.options.includes('double_sided'),
-        mailType: 'usps_first_class',
-        description: job.templateId,
-      });
+      let tracking: any;
+      if (mapping.lob.file || mapping.lob.front || mapping.lob.back || mapping.lob.inside || mapping.lob.outside) {
+        // If IDs provided, use template path
+        tracking = await sendViaTemplate({
+          resource,
+          to,
+          from,
+          template: mapping.lob.file ? { file: mapping.lob.file } : undefined,
+          postcardTemplates: mapping.lob.front && mapping.lob.back ? { front: mapping.lob.front, back: mapping.lob.back } : undefined,
+          selfMailerTemplates: mapping.lob.inside && mapping.lob.outside ? { inside: mapping.lob.inside, outside: mapping.lob.outside } : undefined,
+          mergeVariables: merge,
+          color: Array.isArray(job.options) && job.options.includes('color'),
+          doubleSided: Array.isArray(job.options) && job.options.includes('double_sided'),
+          mailType: 'usps_first_class',
+          description: job.templateId,
+        });
+      } else {
+        // No IDs: inline HTML path
+        if (resource === 'letters') {
+          const template = await loadTemplate(job.templateId || 'letter');
+          const html = template({ ...merge, sender: job.sender, recipient: job.recipient });
+          tracking = await lobInline.sendInline({ resource: 'letters', to, from, letterHtml: html, color: true, doubleSided: false, mailType: 'usps_first_class', description: job.templateId });
+        } else if (resource === 'postcards') {
+          const front = `<html><body style=\"margin:36px;font-family:Arial\"><h1>${merge.headline || 'Hello'}</h1><p>${merge.subheadline || ''}</p></body></html>`;
+          const back = `<html><body style=\"margin:36px;font-family:Arial\"><div>${merge.body || ''}</div><p>${merge.cta_text || ''}</p></body></html>`;
+          tracking = await lobInline.sendInline({ resource: 'postcards', to, from, postcardFrontHtml: front, postcardBackHtml: back, mailType: 'usps_first_class', description: job.templateId });
+        } else {
+          const inside = `<html><body style=\"margin:36px;font-family:Arial\"><h2>${merge.headline || 'Update'}</h2><div>${merge.body || ''}</div></body></html>`;
+          const outside = `<html><body style=\"margin:36px;font-family:Arial\"><h3>${merge.subheadline || ''}</h3></body></html>`;
+          tracking = await lobInline.sendInline({ resource: 'self_mailers', to, from, selfInsideHtml: inside, selfOutsideHtml: outside, mailType: 'usps_first_class', description: job.templateId });
+        }
+      }
       job.status = 'completed';
       job.tracking = tracking;
       if (jobIndex >= 0) { jobs[jobIndex] = job; writeJobs(jobs); }

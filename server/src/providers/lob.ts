@@ -207,3 +207,55 @@ export async function sendViaTemplate(args: SendViaTemplateArgs) {
 
 export const lobProvider = { sendLetterPDF, sendViaTemplate };
 export { Address };
+
+// --- Inline HTML sending (no saved templates) ---
+type SendInlineArgs = {
+  resource: 'letters' | 'postcards' | 'self_mailers';
+  to: Address;
+  from: Address;
+  letterHtml?: string;
+  postcardFrontHtml?: string;
+  postcardBackHtml?: string;
+  selfInsideHtml?: string;
+  selfOutsideHtml?: string;
+  color?: boolean;
+  doubleSided?: boolean;
+  mailType?: 'usps_first_class' | 'usps_standard';
+  description?: string;
+  idempotencyKey?: string;
+};
+
+export async function sendInline(args: SendInlineArgs) {
+  if (!LOB_API_KEY) throw new Error('LOB_API_KEY not configured');
+  if (LOB_MODE === 'test') {
+    return { provider: 'lob', id: `test-${Date.now()}`, status: 'rendered', raw: { mode: 'test', ...args } } as const;
+  }
+  const { resource, to, from } = args;
+  const body: any = { to, from, use_type: 'operational' };
+  if (resource === 'letters') {
+    if (!args.letterHtml) throw new Error('letters: letterHtml required');
+    body.file = args.letterHtml; // HTML string allowed
+    body.color = String(args.color ?? true);
+    body.double_sided = String(args.doubleSided ?? false);
+    body.mail_type = args.mailType || 'usps_first_class';
+  } else if (resource === 'postcards') {
+    if (!args.postcardFrontHtml || !args.postcardBackHtml) throw new Error('postcards: front/back HTML required');
+    body.front = args.postcardFrontHtml;
+    body.back = args.postcardBackHtml;
+    body.mail_type = args.mailType || 'usps_first_class';
+  } else if (resource === 'self_mailers') {
+    if (!args.selfInsideHtml || !args.selfOutsideHtml) throw new Error('self_mailers: inside/outside HTML required');
+    body.inside = args.selfInsideHtml;
+    body.outside = args.selfOutsideHtml;
+    body.mail_type = args.mailType || 'usps_first_class';
+  }
+  if (args.description) body.description = args.description;
+  const headers: any = { Authorization: `Basic ${Buffer.from(`${LOB_API_KEY}:`).toString('base64')}`, 'Content-Type': 'application/json' };
+  if (args.idempotencyKey) headers['Idempotency-Key'] = args.idempotencyKey;
+  const res = await fetch(`${BASE}/${resource}`, { method: 'POST', headers, body: JSON.stringify(body) });
+  const json = (await res.json()) as LobResponse;
+  if (!res.ok) { const err = new Error(`Lob API error: ${res.status} ${JSON.stringify(json)}`); (err as any).status = res.status; (err as any).body = json; throw err; }
+  return { provider: 'lob', id: json.id, status: json.status || 'submitted', raw: json } as const;
+}
+
+export const lobInline = { sendInline };
