@@ -112,3 +112,98 @@ export async function sendLetterPDF({
 }
 
 export default { sendLetterPDF };
+
+// --- Template-based sending (Letters, Postcards, Self‑Mailers) ---
+
+type SendViaTemplateArgs = {
+  resource: 'letters' | 'postcards' | 'self_mailers';
+  to: Address;
+  from: Address;
+  // Letters: file -> tmpl_id; Postcards: front/back tmpl_id; Self-Mailers: inside/outside tmpl_id
+  template?: { file?: string };
+  postcardTemplates?: { front: string; back: string };
+  selfMailerTemplates?: { inside: string; outside: string };
+  mergeVariables?: Record<string, any>;
+  useType?: 'marketing' | 'operational';
+  color?: boolean;
+  doubleSided?: boolean;
+  mailType?: 'usps_first_class' | 'usps_standard';
+  description?: string;
+  idempotencyKey?: string;
+};
+
+export async function sendViaTemplate(args: SendViaTemplateArgs) {
+  if (!LOB_API_KEY) throw new Error('LOB_API_KEY not configured');
+
+  if (LOB_MODE === 'test') {
+    return {
+      provider: 'lob',
+      id: `test-${Date.now()}`,
+      status: 'rendered',
+      raw: { mode: 'test', ...args },
+    } as const;
+  }
+
+  const { resource, to, from, template, postcardTemplates, selfMailerTemplates } = args;
+
+  const body: any = {
+    to,
+    from,
+    use_type: args.useType || 'operational',
+    metadata: {},
+  };
+
+  if (resource === 'letters') {
+    // For letters, pass file as tmpl_id
+    if (!template?.file) throw new Error('letters: template.file (tmpl_id) required');
+    body.file = template.file; // tmpl_...
+    body.color = String(args.color ?? true);
+    body.double_sided = String(args.doubleSided ?? false);
+    body.mail_type = args.mailType || 'usps_first_class';
+    if (args.mergeVariables) body.merge_variables = args.mergeVariables;
+  } else if (resource === 'postcards') {
+    if (!postcardTemplates?.front || !postcardTemplates?.back) throw new Error('postcards: front/back tmpl_id required');
+    body.front = postcardTemplates.front;
+    body.back = postcardTemplates.back;
+    body.mail_type = args.mailType || 'usps_first_class';
+    if (args.mergeVariables) body.merge_variables = args.mergeVariables;
+  } else if (resource === 'self_mailers') {
+    if (!selfMailerTemplates?.inside || !selfMailerTemplates?.outside) throw new Error('self_mailers: inside/outside tmpl_id required');
+    body.inside = selfMailerTemplates.inside;
+    body.outside = selfMailerTemplates.outside;
+    body.mail_type = args.mailType || 'usps_first_class';
+    if (args.mergeVariables) body.merge_variables = args.mergeVariables;
+  }
+
+  if (args.description) body.description = args.description;
+
+  const headers: any = {
+    Authorization: `Basic ${Buffer.from(`${LOB_API_KEY}:`).toString('base64')}`,
+    'Content-Type': 'application/json',
+  };
+  if (args.idempotencyKey) headers['Idempotency-Key'] = args.idempotencyKey;
+
+  const res = await fetch(`${BASE}/${resource}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  const json = (await res.json()) as LobResponse;
+  if (!res.ok) {
+    const err = new Error(`Lob API error: ${res.status} ${JSON.stringify(json)}`);
+    (err as any).status = res.status;
+    (err as any).body = json;
+    throw err;
+  }
+
+  return {
+    provider: 'lob',
+    id: json.id,
+    status: json.status || 'submitted',
+    raw: json,
+  } as const;
+}
+
+export const lobProvider = { sendLetterPDF, sendViaTemplate };
+export { Address };

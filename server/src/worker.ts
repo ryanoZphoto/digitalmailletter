@@ -10,7 +10,7 @@ dotenv.config();
 // Import PrismaClient conditionally to avoid crashes when DATABASE_URL is invalid
 let prisma: any = null;
 
-import lob from './providers/lob.js';
+import lob, { sendViaTemplate } from './providers/lob.js';
 import { htmlToPdfBuffer } from './pdf.js';
 
 const WORKER_CONCURRENCY = Number(process.env.WORKER_CONCURRENCY || 2);
@@ -60,7 +60,41 @@ async function processJobFromFile(job: any) {
       writeJobs(jobs);
     }
 
-    // Process the job using Lob API
+    // Decide path: template mapping vs local HTML->PDF
+    const cfgPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'config.json');
+    let mapping: any = null;
+    try {
+      const raw = await fs.readFile(cfgPath, 'utf8');
+      const cfg = JSON.parse(raw || '{}');
+      mapping = (cfg.templates || []).find((t: any) => t.id === (job.templateId || 'tpl-default')) || null;
+    } catch {}
+
+    if (mapping && mapping.lob) {
+      const resource: 'letters' | 'postcards' | 'self_mailers' = mapping.category === 'Postcards' ? 'postcards' : (mapping.category === 'Self-Mailers' ? 'self_mailers' : 'letters');
+      const to = job.recipient as any;
+      const from = job.sender as any;
+      const merge = (job.body ? (JSON.parse(job.body || '{}')) : {}) as any;
+      const tracking = await sendViaTemplate({
+        resource,
+        to,
+        from,
+        template: mapping.lob.file ? { file: mapping.lob.file } : undefined,
+        postcardTemplates: mapping.lob.front && mapping.lob.back ? { front: mapping.lob.front, back: mapping.lob.back } : undefined,
+        selfMailerTemplates: mapping.lob.inside && mapping.lob.outside ? { inside: mapping.lob.inside, outside: mapping.lob.outside } : undefined,
+        mergeVariables: merge,
+        color: Array.isArray(job.options) && job.options.includes('color'),
+        doubleSided: Array.isArray(job.options) && job.options.includes('double_sided'),
+        mailType: 'usps_first_class',
+        description: job.templateId,
+      });
+      job.status = 'completed';
+      job.tracking = tracking;
+      if (jobIndex >= 0) { jobs[jobIndex] = job; writeJobs(jobs); }
+      console.log('Job processed via template:', job.id, job.status);
+      return;
+    }
+
+    // Fallback: Process via local HTML template and PDF
     const template = await loadTemplate(job.templateId || 'letter');
     let data: any = {};
     if (job.body) {
