@@ -102,8 +102,8 @@ export default function App() {
     { id: 'tpl-formal', name: '👔 Formal Letter (Legal/Official)', description: 'Traditional formal letter format with official styling. Ideal for legal notices, official correspondence, and government communications.', features: ['Official letterhead', 'Formal language structure', 'Legal document styling', 'Signature lines'], category: 'Letters' },
     { id: 'tpl-invoice', name: '🧾 Invoice/Bill', description: 'Professional invoice template with itemized billing structure. Perfect for freelancers, small businesses, and service providers.', features: ['Itemized billing table', 'Professional invoice header', 'Payment terms section', 'Total calculations'], category: 'Letters' },
     { id: 'tpl-personal', name: '💌 Personal Letter', description: 'Warm, friendly design perfect for personal correspondence. Great for thank you notes, personal invitations, and friendly communications.', features: ['Warm color scheme', 'Casual formatting', 'Personal touch design'], category: 'Letters' },
-    { id: 'tpl-postcard', name: '📬 Postcard 4x6', description: 'Front-and-back postcard for quick campaigns, promotions, or reminders.', features: ['Compact message', 'Front/back design'], category: 'Postcards', comingSoon: true },
-    { id: 'tpl-self-mailer', name: '📣 Self‑Mailer (Tri‑Fold)', description: 'Folded self‑mailer ideal for marketing and lifecycle communications.', features: ['Tri-fold panels', 'No envelope'], category: 'Self‑Mailers', comingSoon: true },
+    { id: 'tpl-postcard', name: '📬 Postcard 4x6', description: 'Front-and-back postcard for quick campaigns, promotions, or reminders.', features: ['Compact message', 'Front/back design'], category: 'Postcards' },
+    { id: 'tpl-self-mailer', name: '📣 Self‑Mailer (Tri‑Fold)', description: 'Folded self‑mailer ideal for marketing and lifecycle communications.', features: ['Tri-fold panels', 'No envelope'], category: 'Self‑Mailers' },
   ];
 
   const [category, setCategory] = React.useState<'All' | 'Letters' | 'Postcards' | 'Self‑Mailers'>('All');
@@ -326,12 +326,12 @@ export default function App() {
                           border: templateId === template.id ? '2px solid #2563eb' : '1px solid #d1d5db',
                           borderRadius: '6px',
                           padding: '12px',
-                          background: templateId === template.id ? '#eff6ff' : 'white',
-                          cursor: template.comingSoon ? 'not-allowed' : 'pointer',
+                           background: templateId === template.id ? '#eff6ff' : 'white',
+                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           fontSize: '14px'
                         }}
-                        onClick={() => !template.comingSoon && setTemplateId(template.id)}
+                         onClick={() => setTemplateId(template.id)}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ flex: 1 }}>
@@ -344,16 +344,12 @@ export default function App() {
                                 onChange={() => setTemplateId(template.id)}
                                 id={`template-${template.id}`}
                                 style={{ margin: 0 }}
-                                disabled={template.comingSoon}
                               />
                               <label htmlFor={`template-${template.id}`} style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', cursor: 'pointer' }}>
                                 {template.name}
                               </label>
                               {template.recommended && (
                                 <span style={{ marginLeft: '8px', fontSize: '11px', background: '#dbeafe', color: '#1e40af', padding: '2px 6px', borderRadius: '4px' }}>Recommended</span>
-                              )}
-                              {template.comingSoon && (
-                                <span style={{ marginLeft: '8px', fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 6px', borderRadius: '4px' }}>Coming soon</span>
                               )}
                             </div>
 
