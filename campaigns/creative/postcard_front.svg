@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 6" x 4" postcard with 0.125" bleed on all sides at 300 DPI → 1875 x 1275 px -->
+<!-- Safe area inset 0.125" (37.5 px) from trim (top/left/right/bottom) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1875" height="1275" viewBox="0 0 1875 1275">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="cta" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <clipPath id="safeArea">
+      <rect x="37.5" y="37.5" width="1800" height="1200" rx="24"/>
+    </clipPath>
+    <style><![CDATA[
+      .title { font: 700 84px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .subtitle { font: 500 40px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .body { font: 400 34px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .small { font: 500 28px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .mono { font: 600 30px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    ]]></style>
+  </defs>
+
+  <!-- Full-bleed background -->
+  <rect width="1875" height="1275" fill="url(#bg)"/>
+
+  <!-- Decorative shapes (subtle) -->
+  <g opacity="0.08" fill="#ffffff">
+    <circle cx="1600" cy="260" r="180"/>
+    <circle cx="170" cy="1030" r="140"/>
+    <rect x="-40" y="120" width="400" height="400" rx="40"/>
+  </g>
+
+  <!-- Content within safe area -->
+  <g clip-path="url(#safeArea)">
+    <!-- Left content block -->
+    <g transform="translate(100, 140)" fill="#ffffff">
+      <!-- Logo / Mark -->
+      <g aria-label="Mail My Forms" role="img">
+        <!-- Simple envelope icon -->
+        <rect x="0" y="0" width="140" height="100" rx="12" fill="#ffffff" opacity="0.18"/>
+        <path d="M10 20 h120 v60 h-120 z" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.9"/>
+        <path d="M10 20 l60 40 l60 -40" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.9"/>
+      </g>
+
+      <text x="0" y="190" class="title" fill="#ffffff">Send Letters Online</text>
+      <text x="0" y="250" class="subtitle" fill="#e5e7eb">Printed, stamped, and mailed for you — same day.</text>
+
+      <g transform="translate(0, 320)">
+        <g>
+          <circle cx="18" cy="-6" r="8" fill="#10b981"/>
+          <text x="40" y="0" class="body" fill="#f8fafc">Professional printing on premium paper</text>
+        </g>
+        <g transform="translate(0, 46)">
+          <circle cx="18" cy="-6" r="8" fill="#10b981"/>
+          <text x="40" y="0" class="body" fill="#f8fafc">USPS First Class with tracking</text>
+        </g>
+        <g transform="translate(0, 92)">
+          <circle cx="18" cy="-6" r="8" fill="#10b981"/>
+          <text x="40" y="0" class="body" fill="#f8fafc">Perfect for invoices, notices, and reminders</text>
+        </g>
+      </g>
+
+      <!-- CTA button -->
+      <g transform="translate(0, 500)">
+        <rect x="0" y="-56" width="540" height="96" rx="16" fill="url(#cta)"/>
+        <text x="30" y="8" class="subtitle" fill="#ffffff">Start your letter — from $2.50</text>
+      </g>
+
+      <text x="0" y="620" class="small" fill="#e5e7eb">digitalmailletter.com • support@digitalmailletter.com</text>
+    </g>
+
+    <!-- Right visual mock (letter preview card) -->
+    <g transform="translate(1035, 170)">
+      <rect x="0" y="0" width="740" height="940" rx="28" fill="#ffffff" opacity="0.96"/>
+      <rect x="40" y="40" width="660" height="140" rx="12" fill="#f1f5f9"/>
+      <rect x="40" y="210" width="660" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="245" width="520" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="280" width="600" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="315" width="560" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="350" width="620" height="18" rx="6" fill="#e2e8f0"/>
+
+      <rect x="40" y="420" width="660" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="455" width="620" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="490" width="540" height="18" rx="6" fill="#e2e8f0"/>
+      <rect x="40" y="525" width="600" height="18" rx="6" fill="#e2e8f0"/>
+
+      <!-- Address block -->
+      <rect x="40" y="600" width="380" height="140" rx="12" fill="#f8fafc" stroke="#e5e7eb"/>
+      <text x="60" y="645" class="small" fill="#111827">To:</text>
+      <text x="60" y="685" class="body" fill="#111827">Jane Doe</text>
+      <text x="60" y="725" class="small" fill="#111827">456 Main St, New York, NY 10001</text>
+
+      <!-- Price tag / badge -->
+      <g transform="translate(580, 60)">
+        <rect x="0" y="0" width="120" height="48" rx="10" fill="#d1fae5"/>
+        <text x="14" y="32" class="mono" fill="#065f46">$2.50</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Trim marks (outside safe area, optional visual guide; remove if printer forbids) -->
+  <g stroke="#ffffff" stroke-width="2" opacity="0.25">
+    <line x1="0" y1="37.5" x2="30" y2="37.5"/>
+    <line x1="37.5" y1="0" x2="37.5" y2="30"/>
+    <line x1="1875" y1="37.5" x2="1845" y2="37.5"/>
+    <line x1="1837.5" y1="0" x2="1837.5" y2="30"/>
+    <line x1="0" y1="1237.5" x2="30" y2="1237.5"/>
+    <line x1="37.5" y1="1275" x2="37.5" y2="1245"/>
+    <line x1="1875" y1="1237.5" x2="1845" y2="1237.5"/>
+    <line x1="1837.5" y1="1275" x2="1837.5" y2="1245"/>
+  </g>
+</svg>
+
+
+

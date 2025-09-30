@@ -191,7 +191,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
             fontWeight: '700',
             color: '#f3f4f6'
           }}>
-            Send Physical Letters Online - Professional Letter Printing & Mailing Service
+            Send Physical Letters & Documents Without Leaving Your Desk
           </h2>
           <p style={{
             fontSize: '16px',
