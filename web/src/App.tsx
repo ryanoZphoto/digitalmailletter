@@ -29,6 +29,7 @@ export default function App() {
   const [recipientCountry, setRecipientCountry] = React.useState('US');
 
   const [templateId, setTemplateId] = React.useState('tpl-default');
+  const [options, setOptions] = React.useState<string[]>([]);
   const [messageContent, setMessageContent] = React.useState('');
   const [subject, setSubject] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
@@ -72,7 +73,7 @@ export default function App() {
       // Prepare the body content with proper HTML formatting
       const bodyContent = messageContent.replace(/\n/g, '<br />');
       
-      const payload = { sender, recipient, templateId, serviceLevel: 'first_class', body: bodyContent, subject: subject || undefined, customerEmail };
+      const payload = { sender, recipient, templateId, serviceLevel: 'first_class', options, body: bodyContent, subject: subject || undefined, customerEmail };
       const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload }) });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'Failed to start checkout');
@@ -97,31 +98,16 @@ export default function App() {
   }
 
   const templates = [
-    {
-      id: 'tpl-default',
-      name: '📝 Standard Business Letter',
-      description: 'Professional letterhead with clean formatting. Perfect for business correspondence, proposals, and general communications.',
-      features: ['Professional header', 'Clean layout', 'Business-appropriate styling']
-    },
-    {
-      id: 'tpl-formal',
-      name: '👔 Formal Letter (Legal/Official)',
-      description: 'Traditional formal letter format with official styling. Ideal for legal notices, official correspondence, and government communications.',
-      features: ['Official letterhead', 'Formal language structure', 'Legal document styling', 'Signature lines']
-    },
-    {
-      id: 'tpl-personal',
-      name: '💌 Personal Letter',
-      description: 'Warm, friendly design perfect for personal correspondence. Great for thank you notes, personal invitations, and friendly communications.',
-      features: ['Warm color scheme', 'Casual formatting', 'Personal touch design']
-    },
-    {
-      id: 'tpl-invoice',
-      name: '🧾 Invoice/Bill',
-      description: 'Professional invoice template with itemized billing structure. Perfect for freelancers, small businesses, and service providers.',
-      features: ['Itemized billing table', 'Professional invoice header', 'Payment terms section', 'Total calculations']
-    }
+    { id: 'tpl-default', name: '📝 Standard Business Letter', description: 'Professional letterhead with clean formatting. Perfect for business correspondence, proposals, and general communications.', features: ['Professional header', 'Clean layout', 'Business-appropriate styling'], category: 'Letters', recommended: true },
+    { id: 'tpl-formal', name: '👔 Formal Letter (Legal/Official)', description: 'Traditional formal letter format with official styling. Ideal for legal notices, official correspondence, and government communications.', features: ['Official letterhead', 'Formal language structure', 'Legal document styling', 'Signature lines'], category: 'Letters' },
+    { id: 'tpl-invoice', name: '🧾 Invoice/Bill', description: 'Professional invoice template with itemized billing structure. Perfect for freelancers, small businesses, and service providers.', features: ['Itemized billing table', 'Professional invoice header', 'Payment terms section', 'Total calculations'], category: 'Letters' },
+    { id: 'tpl-personal', name: '💌 Personal Letter', description: 'Warm, friendly design perfect for personal correspondence. Great for thank you notes, personal invitations, and friendly communications.', features: ['Warm color scheme', 'Casual formatting', 'Personal touch design'], category: 'Letters' },
+    { id: 'tpl-postcard', name: '📬 Postcard 4x6', description: 'Front-and-back postcard for quick campaigns, promotions, or reminders.', features: ['Compact message', 'Front/back design'], category: 'Postcards', comingSoon: true },
+    { id: 'tpl-self-mailer', name: '📣 Self‑Mailer (Tri‑Fold)', description: 'Folded self‑mailer ideal for marketing and lifecycle communications.', features: ['Tri-fold panels', 'No envelope'], category: 'Self‑Mailers', comingSoon: true },
   ];
+
+  const [category, setCategory] = React.useState<'All' | 'Letters' | 'Postcards' | 'Self‑Mailers'>('All');
+  const visibleTemplates = templates.filter(t => category === 'All' || t.category === category);
 
   return (
     <div style={{ 
@@ -218,6 +204,37 @@ export default function App() {
         </div>
       </div>
 
+          {/* Printing Options */}
+          <div style={{ 
+            marginBottom: '25px',
+            padding: '16px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            background: '#0f172a'
+          }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: '600', color: '#e5e7eb' }}>
+              Printing Options
+            </h3>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              {[
+                { id: 'double_sided', label: 'Double-sided' },
+                { id: 'color', label: 'Color printing' },
+                { id: 'return_envelope', label: 'Include return envelope' },
+              ].map(opt => (
+                <label key={opt.id} style={{ color: '#e5e7eb', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input
+                    type="checkbox"
+                    checked={options.includes(opt.id)}
+                    onChange={(e) => {
+                      setOptions(prev => e.target.checked ? [...prev, opt.id] : prev.filter(x => x !== opt.id));
+                    }}
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
       {/* Form Section */}
       <div style={{
         background: '#0f172a',
@@ -283,11 +300,26 @@ export default function App() {
                   <p style={{ fontSize: '13px', color: '#666', margin: '0 0 16px 0' }}>
                     Select a template and preview how your letter will look.
                   </p>
+                  {/* Category Filters */}
+                  <div style={{ display: 'flex', gap: '8px', margin: '0 0 10px 0', flexWrap: 'wrap' }}>
+                    {['All','Letters','Postcards','Self‑Mailers'].map(cat => (
+                      <button key={cat} type="button" onClick={() => setCategory(cat as any)}
+                        style={{
+                          background: category === cat ? '#1d4ed8' : '#e2e8f0',
+                          color: category === cat ? '#fff' : '#1f2937',
+                          border: 'none',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}>{cat}</button>
+                    ))}
+                  </div>
 
                   <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
                     <legend style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)' }}>Template options</legend>
                     <div style={{ display: 'grid', gap: '10px' }}>
-                    {templates.map(template => (
+                    {visibleTemplates.map(template => (
                       <div 
                         key={template.id}
                         style={{ 
@@ -295,11 +327,11 @@ export default function App() {
                           borderRadius: '6px',
                           padding: '12px',
                           background: templateId === template.id ? '#eff6ff' : 'white',
-                          cursor: 'pointer',
+                          cursor: template.comingSoon ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s',
                           fontSize: '14px'
                         }}
-                        onClick={() => setTemplateId(template.id)}
+                        onClick={() => !template.comingSoon && setTemplateId(template.id)}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ flex: 1 }}>
@@ -312,11 +344,25 @@ export default function App() {
                                 onChange={() => setTemplateId(template.id)}
                                 id={`template-${template.id}`}
                                 style={{ margin: 0 }}
+                                disabled={template.comingSoon}
                               />
                               <label htmlFor={`template-${template.id}`} style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937', cursor: 'pointer' }}>
                                 {template.name}
                               </label>
+                              {template.recommended && (
+                                <span style={{ marginLeft: '8px', fontSize: '11px', background: '#dbeafe', color: '#1e40af', padding: '2px 6px', borderRadius: '4px' }}>Recommended</span>
+                              )}
+                              {template.comingSoon && (
+                                <span style={{ marginLeft: '8px', fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 6px', borderRadius: '4px' }}>Coming soon</span>
+                              )}
                             </div>
+
+                            <img
+                              src={`/templates/${template.id}.svg`}
+                              alt={`${template.name} thumbnail`}
+                              style={{ width: '180px', height: '120px', borderRadius: '6px', border: '1px solid #e5e7eb', marginBottom: '8px', background: '#fff' }}
+                              loading="lazy"
+                            />
                             
                             <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 12px 0' }}>
                               {template.description}

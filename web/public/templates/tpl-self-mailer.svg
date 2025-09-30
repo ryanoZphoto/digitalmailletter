@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">
+  <rect width="180" height="120" rx="10" fill="#14b8a6"/>
+  <!-- tri-fold hint -->
+  <rect x="18" y="18" width="144" height="84" rx="4" fill="#ffffff"/>
+  <line x1="66" y1="18" x2="66" y2="102" stroke="#e5e7eb" stroke-width="2"/>
+  <line x1="114" y1="18" x2="114" y2="102" stroke="#e5e7eb" stroke-width="2"/>
+  <rect x="26" y="28" width="52" height="6" rx="3" fill="#d1d5db"/>
+  <rect x="74" y="28" width="52" height="6" rx="3" fill="#d1d5db"/>
+  <rect x="122" y="28" width="32" height="6" rx="3" fill="#d1d5db"/>
+  <text x="24" y="108" font-family="system-ui,Segoe UI,Arial" font-size="10" fill="#0f172a">Self‑Mailer</text>
+</svg>
+
+

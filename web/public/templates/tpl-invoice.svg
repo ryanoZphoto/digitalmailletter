@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">
+  <rect width="180" height="120" rx="10" fill="#10b981"/>
+  <rect x="18" y="18" width="144" height="84" rx="6" fill="#ffffff"/>
+  <rect x="30" y="34" width="70" height="8" rx="4" fill="#d1fae5"/>
+  <rect x="30" y="52" width="120" height="8" rx="4" fill="#d1fae5"/>
+  <rect x="30" y="70" width="110" height="8" rx="4" fill="#d1fae5"/>
+  <text x="24" y="108" font-family="system-ui,Segoe UI,Arial" font-size="10" fill="#064e3b">Invoice</text>
+</svg>
+
+
