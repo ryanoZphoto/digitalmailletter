@@ -84,28 +84,7 @@ export default function App() {
     }
   }
 
-  function fillDemoData() {
-    setSenderName('Alice Johnson');
-    setSenderLine1('123 Main Street');
-    setSenderLine2('Suite 4B');
-    setSenderCity('San Francisco');
-    setSenderState('CA');
-    setSenderZip('94102');
-    setRecipientName('Bob Smith');
-    setRecipientLine1('456 Market Street');
-    setRecipientLine2('');
-    setRecipientCity('New York');
-    setRecipientState('NY');
-    setRecipientZip('10001');
-    setSubject('Following up on our meeting');
-    setMessageContent(`I hope this letter finds you well. I wanted to follow up on our productive meeting last week and share some additional thoughts.
-
-As discussed, I believe there are excellent opportunities for our organizations to collaborate on the upcoming project. The timeline and budget we outlined seem very reasonable, and I'm excited about the potential outcomes.
-
-I've attached the preliminary proposal for your review. Please let me know if you have any questions or would like to schedule another meeting to discuss the details further.
-
-Thank you for your time and consideration. I look forward to hearing from you soon.`);
-  }
+  
 
   function openPreview(template: string) {
     setPreviewTemplate(template);
@@ -270,21 +249,7 @@ Thank you for your time and consideration. I look forward to hearing from you so
               }}>
                 Fill out the form below to send a professional letter. We'll print and mail it for you with USPS tracking.
               </p>
-              <button
-                onClick={fillDemoData}
-                style={{
-                  background: '#e2e8f0',
-                  color: '#4a5568',
-                  border: 'none',
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  fontWeight: '500'
-                }}
-              >
-                📝 Fill Demo Data
-              </button>
+              
             </div>
 
             <form onSubmit={submit}>

@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import pino from 'pino';
+import compression from 'compression';
+import helmet from 'helmet';
 // Import db init conditionally to avoid Prisma crashes
 import { readJobs, writeJobs, readConfig, writeConfig } from './store.js';
 import { validateAddressFields, toAlpha2, initCountries } from './address.js';
@@ -18,6 +20,15 @@ dotenv.config();
 const logger = (pino as any)({ level: process.env.LOG_LEVEL || 'info' });
 
 const app = express();
+
+// Security headers (prod-safe defaults)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+} as any));
+
+// Gzip/Brotli compression
+app.use(compression());
 
 // Initialize countries (loads json locale)
 initCountries().catch((e) => {
@@ -988,7 +999,17 @@ try {
   logger.error(`Public directory not found at: ${publicPath}`);
 }
 
-app.use(express.static(publicPath));
+// Static assets with long cache
+app.use(express.static(publicPath, {
+  maxAge: '30d',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, file) => {
+    if (file.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+}));
 
 // Serve sitemap.xml with correct content-type and fallback
 app.get('/sitemap.xml', (req, res) => {
@@ -1028,6 +1049,16 @@ app.get('/robots.txt', (req, res) => {
 });
 
 // Serve React app for all non-API routes (catch-all)
+// Canonical host redirect (optional: prefer apex)
+app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  const preferredHost = 'www.digitalmailletter.com';
+  if (process.env.NODE_ENV === 'production' && host !== preferredHost) {
+    return res.redirect(301, `${req.protocol}://${preferredHost}${req.originalUrl}`);
+  }
+  next();
+});
+
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
