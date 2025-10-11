@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.join(__dirname, '..');
-const DATA = path.join(ROOT, '..', 'data', 'config.json');
+const DATA = path.join(ROOT, 'data', 'config.json');
 
 const BASE = 'https://api.lob.com/v1';
 const KEY = process.env.LOB_API_KEY;
@@ -37,7 +37,7 @@ async function createTemplate(name, html) {
   return json.id; // tmpl_...
 }
 
-const letterHTML = `<html><body style="margin:36px;font-family:Arial,sans-serif"><h1>{{subject}}</h1><div>{{{body}}}</div><hr/><div>From: {{sender.name}}</div><div>To: {{recipient.name}}</div></body></html>`;
+const letterHTML = `<html><body style="margin:0.5in;font-family:Arial,sans-serif"><div style="height:4.25in"></div><h1 style="margin:0 0 8px 0;font-size:18px">{{subject}}</h1><div style="font-size:12px;line-height:1.5">{{{body}}}</div><hr style="margin:.2in 0"/><div style="font-size:11px">From: {{sender.name}}</div><div style="font-size:11px">To: {{recipient.name}}</div></body></html>`;
 const postcardFront = `<html><body style="margin:36px;font-family:Arial,sans-serif"><h1>{{headline}}</h1><p>{{subheadline}}</p></body></html>`;
 const postcardBack = `<html><body style="margin:36px;font-family:Arial,sans-serif"><p>{{body}}</p><p>{{cta_text}}</p></body></html>`;
 const selfInside = `<html><body style="margin:36px;font-family:Arial,sans-serif"><h2>{{headline}}</h2><p>{{body}}</p></body></html>`;

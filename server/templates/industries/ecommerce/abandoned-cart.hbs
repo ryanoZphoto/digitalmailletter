@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="page-size" content="6.25in 4.25in" />
+  <title>We Saved Your Cart</title>
+</head>
+<body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #fafafa;">
+
+  <!-- Header -->
+  <div style="background-color:#222; color:#fff; padding:20px; text-align:center;">
+    <h1 style="margin:0; font-size:22px;">Forgot Something?</h1>
+  </div>
+
+  <!-- Cart Product -->
+  <div style="background-color:#fff; margin:15px; padding:15px; border:2px solid #222;">
+    <h2 style="margin:0 0 10px 0; font-size:18px;">Your Cart is Waiting</h2>
+    <div style="display:flex; align-items:center;">
+      <div style="flex:0 0 120px;">
+        <img src="{{product_image_url}}" alt="Product" style="width:100px; height:100px; object-fit:cover;" />
+      </div>
+      <div style="margin-left:15px;">
+        <p style="margin:5px 0; font-weight:bold; color:#333;">{{product_name}}</p>
+        <p style="margin:5px 0; color:#333;">${{product_price}}</p>
+      </div>
+    </div>
+    <p style="margin-top:15px; font-size:14px; color:#333;">
+      Complete your purchase now and enjoy <strong>{{discount}}</strong> off your order!
+    </p>
+  </div>
+
+  <!-- CTA -->
+  <div style="background-color:#0066cc; color:#fff; text-align:center; padding:20px; margin:15px;">
+    <p style="margin:0; font-size:18px; font-weight:bold;">Checkout Today</p>
+    <p style="margin:5px 0 0; font-size:14px;">Visit: <a href="{{checkout_url}}" style="color:#fff; text-decoration:underline;">{{checkout_url}}</a></p>
+  </div>
+
+  <!-- Urgency -->
+  <div style="text-align:center; padding:10px; font-size:14px; color:#c00;">
+    Hurry, items in your cart are only reserved for a limited time!
+  </div>
+
+  <!-- Footer -->
+  <div style="background-color:#222; color:#fff; padding:10px; text-align:center; font-size:12px;">
+    <p style="margin:0;">{{company_name}} • {{company_address}}</p>
+  </div>
+
+</body>
+</html>
