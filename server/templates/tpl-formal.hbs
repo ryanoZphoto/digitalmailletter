@@ -8,14 +8,7 @@
         line-height: 1.6;
         color: #000;
       }
-      .letterhead {
-        text-align: center;
-        border-bottom: 2px solid #000;
-        padding-bottom: 20px;
-        margin-bottom: 40px;
-        font-weight: bold;
-        font-size: 18px;
-      }
+      /* Remove heavy letterhead to avoid interfering with address block */
       .sender { 
         font-size: 12px; 
         color: #333;
@@ -48,29 +41,16 @@
     </style>
   </head>
   <body>
-    <div class="letterhead">
-      OFFICIAL CORRESPONDENCE
-    </div>
+    <!-- Reserve safe zone at top for Lob address placement (top_first_page) -->
+    <div style="height:4.25in"></div>
 
-    <div class="sender">
-      {{sender.name}}<br />
-      {{#if sender.company}}{{sender.company}}<br />{{/if}}
-      {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
-      {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}<br />
-      {{sender.address_country}}
-    </div>
+    <!-- Sender/recipient omitted; Lob prints them in the top window. -->
 
     <div class="date">
       {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
     </div>
 
-    <div class="recipient">
-      {{recipient.name}}<br />
-      {{#if recipient.company}}{{recipient.company}}<br />{{/if}}
-      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
-      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}<br />
-      {{recipient.address_country}}
-    </div>
+    <!-- Recipient omitted -->
 
     {{#if subject}}
     <div class="subject">

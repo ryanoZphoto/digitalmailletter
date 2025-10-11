@@ -57,24 +57,15 @@
     </style>
   </head>
   <body>
-    <div class="header">
-      <div class="sender">
-        {{sender.name}}<br />
-        {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
-        {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}
-      </div>
-    </div>
+    <!-- Reserve safe zone at top for Lob address placement (top_first_page) -->
+    <div style="height:4.25in"></div>
+    <!-- Sender header removed to avoid crowding the address window. -->
 
     <div class="date">
       {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
     </div>
 
-    <div class="recipient-label">To:</div>
-    <div class="recipient">
-      {{recipient.name}}<br />
-      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
-      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}
-    </div>
+    <!-- Recipient block removed; Lob will render address. -->
 
     <div class="greeting">
       {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}

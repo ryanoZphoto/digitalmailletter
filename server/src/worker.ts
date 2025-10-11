@@ -11,7 +11,6 @@ dotenv.config();
 let prisma: any = null;
 
 import lob, { sendViaTemplate, lobInline } from './providers/lob.js';
-import { htmlToPdfBuffer } from './pdf.js';
 
 const WORKER_CONCURRENCY = Number(process.env.WORKER_CONCURRENCY || 2);
 const RETRY_MAX = Number(process.env.RETRY_MAX || 3);
@@ -75,34 +74,44 @@ async function processJobFromFile(job: any) {
       const from = job.sender as any;
       const merge = (job.body ? (JSON.parse(job.body || '{}')) : {}) as any;
       let tracking: any;
-      if (mapping.lob.file || mapping.lob.front || mapping.lob.back || mapping.lob.inside || mapping.lob.outside) {
-        // If IDs provided, use template path
+      const isValidId = (v: any) => typeof v === 'string' && /^tmpl_/.test(v);
+      const hasValidLetter = isValidId(mapping.lob.file);
+      const hasValidPostcard = isValidId(mapping.lob.front) && isValidId(mapping.lob.back);
+      const hasValidSelfMailer = isValidId(mapping.lob.inside) && isValidId(mapping.lob.outside);
+
+      const canUseSaved = (resource === 'letters' && hasValidLetter) || (resource === 'postcards' && hasValidPostcard) || (resource === 'self_mailers' && hasValidSelfMailer);
+
+      if (canUseSaved) {
+        // Use saved template path with merge variables
         tracking = await sendViaTemplate({
           resource,
           to,
           from,
-          template: mapping.lob.file ? { file: mapping.lob.file } : undefined,
-          postcardTemplates: mapping.lob.front && mapping.lob.back ? { front: mapping.lob.front, back: mapping.lob.back } : undefined,
-          selfMailerTemplates: mapping.lob.inside && mapping.lob.outside ? { inside: mapping.lob.inside, outside: mapping.lob.outside } : undefined,
+          template: resource === 'letters' ? { file: mapping.lob.file } : undefined,
+          postcardTemplates: resource === 'postcards' ? { front: mapping.lob.front, back: mapping.lob.back } : undefined,
+          selfMailerTemplates: resource === 'self_mailers' ? { inside: mapping.lob.inside, outside: mapping.lob.outside } : undefined,
           mergeVariables: merge,
           color: Array.isArray(job.options) && job.options.includes('color'),
           doubleSided: Array.isArray(job.options) && job.options.includes('double_sided'),
           mailType: 'usps_first_class',
           description: job.templateId,
+          metadata: { templateId: job.templateId || '', jobId: job.id },
         });
       } else {
+        console.warn('Invalid or missing Lob template IDs; using inline HTML for job', { jobId: job.id, templateId: job.templateId, resource });
         // No IDs: inline HTML path
         if (resource === 'letters') {
           const template = await loadTemplate(job.templateId || 'letter');
           const html = template({ ...merge, sender: job.sender, recipient: job.recipient });
           tracking = await lobInline.sendInline({ resource: 'letters', to, from, letterHtml: html, color: true, doubleSided: false, mailType: 'usps_first_class', description: job.templateId });
         } else if (resource === 'postcards') {
-          const front = `<html><body style=\"margin:36px;font-family:Arial\"><h1>${merge.headline || 'Hello'}</h1><p>${merge.subheadline || ''}</p></body></html>`;
-          const back = `<html><body style=\"margin:36px;font-family:Arial\"><div>${merge.body || ''}</div><p>${merge.cta_text || ''}</p></body></html>`;
+          // USPS-safe postcard layout: reserve right panel for address/barcode
+          const front = `<html><body style="width:6in;height:4in;margin:0"><div style="position:relative;width:6in;height:4in"><div style="position:absolute;left:0;top:0;width:6in;height:4in;overflow:hidden"><div style="position:absolute;left:0;top:0;right:0;bottom:0;padding:0.25in;font-family:Arial,sans-serif;color:#111"><h1 style="margin:0 0 .1in 0;font-size:28px">${merge.headline || ''}</h1><p style="margin:.05in 0 .1in 0;font-size:14px">${merge.subheadline || ''}</p></div></div></div></body></html>`;
+          const back = `<html><body style="width:6in;height:4in;margin:0"><div style="position:relative;width:6in;height:4in;font-family:Arial,sans-serif;color:#111"><div style="position:absolute;left:0;top:0;width:3.5in;height:4in;padding:.25in;box-sizing:border-box"><div style="font-size:12px;line-height:1.4">${merge.body || ''}</div><div style="margin-top:.1in;font-weight:600;font-size:12px">${merge.cta_text || ''}</div></div><div style="position:absolute;right:0;top:0;width:2.5in;height:4in;padding:.25in;box-sizing:border-box"><div style="position:absolute;right:.25in;top:.3in;width:2in;height:2.75in;border:1px solid #eee"></div></div></div></body></html>`;
           tracking = await lobInline.sendInline({ resource: 'postcards', to, from, postcardFrontHtml: front, postcardBackHtml: back, mailType: 'usps_first_class', description: job.templateId });
         } else {
-          const inside = `<html><body style=\"margin:36px;font-family:Arial\"><h2>${merge.headline || 'Update'}</h2><div>${merge.body || ''}</div></body></html>`;
-          const outside = `<html><body style=\"margin:36px;font-family:Arial\"><h3>${merge.subheadline || ''}</h3></body></html>`;
+          const inside = `<html><body style="width:11in;height:9in;margin:0"><div style="padding:.5in;font-family:Arial,sans-serif"><h2 style="margin-top:0;font-size:20px">${merge.headline || ''}</h2><div style="font-size:12px;line-height:1.5">${merge.body || ''}</div></div></body></html>`;
+          const outside = `<html><body style="width:11in;height:9in;margin:0"><div style="position:relative;width:11in;height:9in;font-family:Arial,sans-serif"><div style="position:absolute;right:0.75in;top:0.75in;width:4in;height:2.75in;border:1px solid #eee"></div><div style="position:absolute;left:.5in;top:.5in;right:4.25in;bottom:.5in"><h3 style="margin-top:0;font-size:18px">${merge.subheadline || ''}</h3></div></div></body></html>`;
           tracking = await lobInline.sendInline({ resource: 'self_mailers', to, from, selfInsideHtml: inside, selfOutsideHtml: outside, mailType: 'usps_first_class', description: job.templateId });
         }
       }
@@ -112,65 +121,21 @@ async function processJobFromFile(job: any) {
       console.log('Job processed via template:', job.id, job.status);
       return;
     }
-
-    // Fallback: Process via local HTML template and PDF
-    const template = await loadTemplate(job.templateId || 'letter');
-    let data: any = {};
-    if (job.body) {
-      try {
-        data = JSON.parse(job.body as unknown as string);
-      } catch {
-        data = { body: job.body };
-      }
-    }
-
-    const html = template({ ...data, sender: job.sender, recipient: job.recipient });
-    
-    let pdf: Buffer;
-    try {
-      const pdfUint8 = await htmlToPdfBuffer(html);
-      pdf = Buffer.from(pdfUint8);
-    } catch (pdfError) {
-      console.error('PDF generation failed, using fallback:', pdfError);
-      // Fallback: Create a simple text-based PDF or use a basic HTML template
-      const fallbackHtml = `
-        <html>
-          <head><title>Letter</title></head>
-          <body style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Letter from ${job.sender?.name || 'Unknown'}</h2>
-            <p><strong>To:</strong> ${job.recipient?.name || 'Unknown'}</p>
-            <p><strong>Address:</strong> ${job.recipient?.address_line1 || ''} ${job.recipient?.address_city || ''}, ${job.recipient?.address_state || ''} ${job.recipient?.address_zip || ''}</p>
-            <hr>
-            <div>${data.body || 'Letter content'}</div>
-          </body>
-        </html>
-      `;
-      
-      try {
-        const fallbackPdf = await htmlToPdfBuffer(fallbackHtml);
-        pdf = Buffer.from(fallbackPdf);
-      } catch (fallbackError) {
-        console.error('Fallback PDF generation also failed:', fallbackError);
-        throw new Error('PDF generation completely failed: ' + String(pdfError));
-      }
-    }
-
+    // No mapping present: always send via inline HTML (no PDF fallback)
+    const resource: 'letters' = 'letters';
     const to = job.recipient as any;
     const from = job.sender as any;
-
-    const tracking = await lob.sendLetterPDF({ to, from, pdfBuffer: pdf, description: (job.templateId ?? undefined) as any });
-    
-    // Update job status to completed
+    let data: any = {};
+    if (job.body) {
+      try { data = JSON.parse(job.body as unknown as string); } catch { data = { body: job.body }; }
+    }
+    const template = await loadTemplate(job.templateId || 'letter');
+    const html = template({ ...data, sender: job.sender, recipient: job.recipient });
+    const tracking = await lobInline.sendInline({ resource: 'letters', to, from, letterHtml: html, color: true, doubleSided: false, mailType: 'usps_first_class', description: job.templateId });
     job.status = 'completed';
     job.tracking = tracking;
-    
-    // Save updated job
-    if (jobIndex >= 0) {
-      jobs[jobIndex] = job;
-      writeJobs(jobs);
-    }
-    
-    console.log('Job processed from file store:', job.id, job.status);
+    if (jobIndex >= 0) { jobs[jobIndex] = job; writeJobs(jobs); }
+    console.log('Job processed via inline HTML (no fallback):', job.id, job.status);
   } catch (error) {
     console.error('Error processing job from file store:', job.id, error);
     job.status = 'failed';
@@ -218,13 +183,9 @@ async function processJob(jobId: string) {
     }
 
     const html = template({ ...data, sender: job.sender, recipient: job.recipient });
-  const pdfUint8 = await htmlToPdfBuffer(html);
-  const pdf = Buffer.from(pdfUint8);
-
     const to = job.recipient as any;
     const from = job.sender as any;
-
-  const tracking = await lob.sendLetterPDF({ to, from, pdfBuffer: pdf, description: (job.templateId ?? undefined) as any });
+    const tracking = await lobInline.sendInline({ resource: 'letters', to, from, letterHtml: html, color: true, doubleSided: false, mailType: 'usps_first_class', description: job.templateId });
 
     await prismaClient.job.update({ where: { id: jobId }, data: { status: 'sent', tracking: tracking as any } });
   } catch (err) {

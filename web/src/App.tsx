@@ -37,6 +37,26 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
   const [previewTemplate, setPreviewTemplate] = React.useState('');
+  const [pricing, setPricing] = React.useState<{ base: number; extras: Record<string, number>; templates: Record<string, number>; markupPercent?: number; public?: { base: number; extras: Record<string, number>; templates: Record<string, number>; } } | null>(null);
+
+  React.useEffect(() => {
+    fetch('/api/pricing').then(r => r.json()).then(setPricing).catch(() => setPricing(null));
+  }, []);
+
+  function formatCents(cents: number) {
+    return `$${(cents/100).toFixed(2)}`;
+  }
+
+  function computePrice(): number {
+    if (!pricing) return 0;
+    const pub = pricing.public || pricing; // prefer server-provided marked-up
+    const tplExtra = pub.templates[templateId] || 0;
+    let total = pub.base + tplExtra;
+    if (options.includes('color')) total += (pub.extras.color || 0);
+    if (options.includes('double_sided')) total += (pub.extras.double_sided || 0);
+    if (options.includes('return_envelope')) total += (pub.extras.return_envelope || 0);
+    return total;
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -204,6 +224,57 @@ export default function App() {
         </div>
       </div>
 
+      {/* Live Examples Section */}
+      <div style={{ background: '#0f172a', padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 600, color: '#e5e7eb' }}>
+            Live Template Examples (what your letter will look like)
+          </h3>
+          <p style={{ margin: '0 0 16px 0', color: '#cbd5e1', fontSize: '13px' }}>
+            These are real-time previews rendered by the server. Pick one to use it.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+            {[
+              { id: 'tpl-default', name: 'Standard Business Letter' },
+              { id: 'tpl-formal', name: 'Formal Letter (Legal/Official)' },
+              { id: 'tpl-personal', name: 'Personal Letter' },
+              { id: 'tpl-invoice', name: 'Invoice/Bill' },
+            ].map(t => (
+              <div key={t.id} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 8, padding: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#e5e7eb' }}>{t.name}</div>
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>{t.id}</span>
+                </div>
+                <div style={{ background: '#0b1020', border: '1px solid #1f2937', borderRadius: 6, overflow: 'hidden' }}>
+                  <iframe
+                    title={`preview-${t.id}`}
+                    src={`/api/templates/${t.id}/preview`}
+                    style={{ width: '100%', height: 360, border: 'none', background: 'white' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => setTemplateId(t.id)}
+                    style={{ background: '#1d4ed8', color: 'white', border: 'none', padding: '8px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    ✓ Use this template
+                  </button>
+                  <a
+                    href={`/api/templates/${t.id}/preview`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ background: '#e2e8f0', color: '#111827', textDecoration: 'none', padding: '8px 12px', borderRadius: 6, fontSize: 12 }}
+                  >
+                    🔗 Open full preview
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
           {/* Printing Options */}
           <div style={{ 
             marginBottom: '25px',
@@ -350,6 +421,11 @@ export default function App() {
                               </label>
                               {template.recommended && (
                                 <span style={{ marginLeft: '8px', fontSize: '11px', background: '#dbeafe', color: '#1e40af', padding: '2px 6px', borderRadius: '4px' }}>Recommended</span>
+                              )}
+                              {pricing && (
+                                <span style={{ marginLeft: '8px', fontSize: '11px', background: '#ecfeff', color: '#155e75', padding: '2px 6px', borderRadius: '4px' }}>
+                                  From {formatCents(((pricing.public?.base ?? pricing.base) + ((pricing.public?.templates?.[template.id] ?? pricing.templates[template.id])||0)))}
+                                </span>
                               )}
                             </div>
 
@@ -1002,11 +1078,13 @@ export default function App() {
                     boxShadow: '0 4px 12px rgba(102, 126, 234, 0.25)'
                   }}
                 >
-                  {isSubmitting ? '⏳ Processing...' : '📮 Send Letter ($2.50)'}
+                  {isSubmitting ? '⏳ Processing...' : `📮 Send Letter (${pricing ? formatCents(computePrice()) : '$2.50'})`}
                 </button>
-                <p style={{ fontSize: '14px', color: '#666', margin: '12px 0 0 0' }}>
-                  Includes printing, postage, and first-class delivery
-                </p>
+                {pricing && (
+                  <p style={{ fontSize: '14px', color: '#666', margin: '12px 0 0 0' }}>
+                    Base {formatCents(pricing.public?.base ?? pricing.base)}{(pricing.public?.extras?.color ?? pricing.extras.color) ? ` • Color +${formatCents((pricing.public?.extras?.color ?? pricing.extras.color) || 0)}` : ''}{(pricing.public?.extras?.double_sided ?? pricing.extras.double_sided) ? ` • Double-sided +${formatCents((pricing.public?.extras?.double_sided ?? pricing.extras.double_sided) || 0)}` : ''}{(pricing.public?.extras?.return_envelope ?? pricing.extras.return_envelope) ? ` • Return envelope +${formatCents((pricing.public?.extras?.return_envelope ?? pricing.extras.return_envelope) || 0)}` : ''}
+                  </p>
+                )}
         </div>
       </form>
 

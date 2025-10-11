@@ -273,6 +273,48 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PRICE_CENTS = Number(process.env.PRICE_CENTS || 250);
 const stripe = STRIPE_SECRET ? new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' }) : (null as any);
 
+function getPricing() {
+  // Base price and surcharges in cents from environment
+  const base = Number(process.env.PRICE_CENTS || STRIPE_PRICE_CENTS || 250);
+  const extras = {
+    color: Number(process.env.PRICE_EXTRA_COLOR_CENTS || 0),
+    double_sided: Number(process.env.PRICE_EXTRA_DOUBLE_SIDED_CENTS || 0),
+    return_envelope: Number(process.env.PRICE_EXTRA_RETURN_ENVELOPE_CENTS || 0),
+  };
+  const templates: Record<string, number> = {
+    'tpl-default': Number(process.env.PRICE_TPL_DEFAULT_EXTRA_CENTS || 0),
+    'tpl-formal': Number(process.env.PRICE_TPL_FORMAL_EXTRA_CENTS || 0),
+    'tpl-personal': Number(process.env.PRICE_TPL_PERSONAL_EXTRA_CENTS || 0),
+    'tpl-invoice': Number(process.env.PRICE_TPL_INVOICE_EXTRA_CENTS || 0),
+  };
+  const markupPercent = Number(process.env.PRICE_MARKUP_PERCENT || 0);
+  const factor = 1 + (isFinite(markupPercent) ? (markupPercent / 100) : 0);
+  const apply = (c: number) => Math.max(0, Math.round(c * factor));
+  const publicPrices = {
+    base: apply(base),
+    extras: {
+      color: apply(extras.color || 0),
+      double_sided: apply(extras.double_sided || 0),
+      return_envelope: apply(extras.return_envelope || 0),
+    },
+    templates: Object.fromEntries(Object.entries(templates).map(([k, v]) => [k, apply(v || 0)])) as Record<string, number>
+  };
+  return { base, extras, templates, markupPercent, public: publicPrices };
+}
+
+function computeAmountCents(input: { templateId?: string | null; options?: string[] | null }): number {
+  const { base, extras, templates, markupPercent } = getPricing();
+  const tplId = input.templateId || 'tpl-default';
+  const tplExtra = templates[tplId] || 0;
+  const opts = new Set((input.options || []) as string[]);
+  let total = base + tplExtra;
+  if (opts.has('color')) total += extras.color;
+  if (opts.has('double_sided')) total += extras.double_sided;
+  if (opts.has('return_envelope')) total += extras.return_envelope;
+  const factor = 1 + (isFinite(Number(markupPercent)) ? (Number(markupPercent) / 100) : 0);
+  return Math.max(0, Math.round(total * factor));
+}
+
 // Email configuration
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
@@ -366,16 +408,20 @@ app.post('/api/checkout', async (req, res) => {
   try {
     const { payload } = req.body || {};
     if (!payload) return res.status(400).json({ error: 'Missing payload' });
+    const amountCents = computeAmountCents({ templateId: payload.templateId, options: payload.options });
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [
-        { price_data: { currency: 'usd', product_data: { name: 'Physical Letter' }, unit_amount: STRIPE_PRICE_CENTS }, quantity: 1 }
+        { price_data: { currency: 'usd', product_data: { name: 'Physical Letter' }, unit_amount: amountCents }, quantity: 1 }
       ],
       success_url: `${req.protocol}://${req.get('host')}?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.protocol}://${req.get('host')}?canceled=1`,
       metadata: { 
-        payload: JSON.stringify(payload)
+        payload: JSON.stringify(payload),
+        templateId: String(payload.templateId || 'tpl-default'),
+        options: JSON.stringify(payload.options || []),
+        computed_amount_cents: String(amountCents)
       }
     });
     res.json({ id: session.id, url: session.url });
@@ -383,6 +429,11 @@ app.post('/api/checkout', async (req, res) => {
     logger.error(String(e));
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
+});
+
+// Pricing endpoint for frontend to display per-template and option costs
+app.get('/api/pricing', (req, res) => {
+  return res.json(getPricing());
 });
 
 // (Webhook route defined earlier to preserve raw body)
@@ -616,7 +667,7 @@ app.post('/api/letters', async (req, res) => {
     id,
     createdAt: now,
     status: 'submitted',
-    templateId: payload.templateId || null,
+    templateId: payload.templateId || 'tpl-default',
     body: JSON.stringify(templateData),
     fields: payload.fields || {},
     sender,
@@ -649,7 +700,17 @@ app.post('/api/letters', async (req, res) => {
   const jobs = readJobs();
   jobs.push(job);
   writeJobs(jobs);
-  return res.status(201).json({ id: job.id, tracking: job.tracking, status: job.status });
+
+  // Immediately process the job in file-store mode so tracking updates to Lob right away
+  try {
+    const { processJobFromFile } = await import('./worker.js');
+    await processJobFromFile(job);
+    // Re-read for latest tracking
+    const updated = (readJobs() as any[]).find((j: any) => j.id === id) || job;
+    return res.status(201).json({ id: updated.id, tracking: updated.tracking, status: updated.status });
+  } catch {
+    return res.status(201).json({ id: job.id, tracking: job.tracking, status: job.status });
+  }
 });
 
 // List jobs (reads from DB if connected, otherwise file store)

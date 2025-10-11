@@ -1,3 +1,5 @@
+server/.env
+server/.env.*
 # Node / frontend
 node_modules/
 dist/

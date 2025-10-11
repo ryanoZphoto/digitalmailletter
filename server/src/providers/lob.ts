@@ -128,8 +128,12 @@ type SendViaTemplateArgs = {
   color?: boolean;
   doubleSided?: boolean;
   mailType?: 'usps_first_class' | 'usps_standard';
+  // Optional layout/production controls
+  size?: string; // postcards: '4x6' | '6x9' | '6x11'; self_mailers: '6x18_bifold' | '11x9_bifold' | '12x9_bifold'
+  extraService?: string;
   description?: string;
   idempotencyKey?: string;
+  metadata?: Record<string, any>;
 };
 
 export async function sendViaTemplate(args: SendViaTemplateArgs) {
@@ -150,7 +154,7 @@ export async function sendViaTemplate(args: SendViaTemplateArgs) {
     to,
     from,
     use_type: args.useType || 'operational',
-    metadata: {},
+    metadata: args.metadata || {},
   };
 
   if (resource === 'letters') {
@@ -160,18 +164,22 @@ export async function sendViaTemplate(args: SendViaTemplateArgs) {
     body.color = String(args.color ?? true);
     body.double_sided = String(args.doubleSided ?? false);
     body.mail_type = args.mailType || 'usps_first_class';
+    // Ensure Lob places address block at top of first page
+    body.address_placement = 'top_first_page';
     if (args.mergeVariables) body.merge_variables = args.mergeVariables;
   } else if (resource === 'postcards') {
     if (!postcardTemplates?.front || !postcardTemplates?.back) throw new Error('postcards: front/back tmpl_id required');
     body.front = postcardTemplates.front;
     body.back = postcardTemplates.back;
     body.mail_type = args.mailType || 'usps_first_class';
+    if (args.size) body.size = args.size; else body.size = '4x6';
     if (args.mergeVariables) body.merge_variables = args.mergeVariables;
   } else if (resource === 'self_mailers') {
     if (!selfMailerTemplates?.inside || !selfMailerTemplates?.outside) throw new Error('self_mailers: inside/outside tmpl_id required');
     body.inside = selfMailerTemplates.inside;
     body.outside = selfMailerTemplates.outside;
     body.mail_type = args.mailType || 'usps_first_class';
+    if (args.size) body.size = args.size; // default handled by Lob if omitted
     if (args.mergeVariables) body.merge_variables = args.mergeVariables;
   }
 
@@ -238,6 +246,8 @@ export async function sendInline(args: SendInlineArgs) {
     body.color = String(args.color ?? true);
     body.double_sided = String(args.doubleSided ?? false);
     body.mail_type = args.mailType || 'usps_first_class';
+    // Ensure address is printed in a reserved top area
+    body.address_placement = 'top_first_page';
   } else if (resource === 'postcards') {
     if (!args.postcardFrontHtml || !args.postcardBackHtml) throw new Error('postcards: front/back HTML required');
     body.front = args.postcardFrontHtml;

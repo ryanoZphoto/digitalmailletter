@@ -1,89 +1,37 @@
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <style>
-      body { 
-        font-family: 'Arial', sans-serif; 
-        margin: 50px;
-        line-height: 1.6;
-        color: #333;
-      }
-      .letterhead {
-        text-align: center;
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 15px;
-        margin-bottom: 30px;
-        font-weight: bold;
-        font-size: 16px;
-      }
-      .sender { 
-        font-size: 12px; 
-        color: #7f8c8d;
-        margin-bottom: 25px;
-      }
-      .date {
-        text-align: right;
-        margin-bottom: 25px;
-        font-size: 12px;
-        color: #95a5a6;
-      }
-      .recipient { 
-        margin-bottom: 25px; 
-        font-size: 13px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-left: 4px solid #3498db;
-      }
-      .content { 
-        margin: 25px 0;
-        font-size: 14px;
-        text-align: justify;
-      }
-      .closing {
-        margin-top: 40px;
-        font-size: 13px;
-      }
-    </style>
+    <title>Business Correspondence</title>
   </head>
-  <body>
-    <div class="letterhead">
-      BUSINESS CORRESPONDENCE
-    </div>
+  <body style="font-family: Arial, sans-serif; margin: 0; line-height: 1.5; color: #333; background-color:#ffffff;">
 
-    <div class="sender">
-      {{sender.name}}<br />
-      {{#if sender.company}}{{sender.company}}<br />{{/if}}
-      {{sender.address_line1}}{{#if sender.address_line2}}, {{sender.address_line2}}{{/if}}<br />
-      {{sender.address_city}}, {{sender.address_state}} {{sender.address_zip}}<br />
-      {{sender.address_country}}
-    </div>
+    <!-- Content is positioned below the address window using relative top offset and fixed page margins -->
+    <div style="position:relative; top:5.1in; margin:0 .6in .6in .6in; max-width:7.3in; color:#111; overflow-wrap:anywhere; word-break:normal;">
+      <div style="height:6px;background:#0b57d0;border-radius:3px;margin:0 0 18px 0"></div>
+      {{#if subject}}
+        <h1 style="margin:0 0 10px 0;font-size:18px;letter-spacing:.2px;color:#0b57d0;">{{subject}}</h1>
+      {{/if}}
+      <div style="font-size:12px;color:#4b5563;margin:0 0 14px 0;">{{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}</div>
 
-    <div class="date">
-      {{#if date}}{{date}}{{else}}{{currentDate}}{{/if}}
-    </div>
+      <!-- Letter Content -->
+      <div style="font-size:13px; line-height:1.7; color:#1f2937; margin:0 0 22px 0;">
+        {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}
+        <br /><br />
+        {{{body}}}
+      </div>
 
-    <div class="recipient">
-      <strong>To:</strong><br />
-      {{recipient.name}}<br />
-      {{#if recipient.company}}{{recipient.company}}<br />{{/if}}
-      {{recipient.address_line1}}{{#if recipient.address_line2}}, {{recipient.address_line2}}{{/if}}<br />
-      {{recipient.address_city}}, {{recipient.address_state}} {{recipient.address_zip}}<br />
-      {{recipient.address_country}}
-    </div>
+      <div style="margin:16px 0 26px 0;padding:12px 14px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;color:#374151;font-size:12px;">
+        <strong style="color:#111827;">Notice</strong><br/>
+        Printed in full color and mailed via USPS First Class. Keep this for your records.
+      </div>
 
-    <div class="content">
-      {{#if greeting}}{{greeting}}{{else}}Dear {{recipient.name}},{{/if}}<br /><br />
-      
-      {{{body}}}
-
-      <br /><br />
-      {{#if closing}}{{closing}}{{else}}Best regards,{{/if}}
-    </div>
-
-    <div class="closing">
-      <br /><br />
-      {{sender.name}}{{#if sender.title}}<br />{{sender.title}}{{/if}}
+      <div style="font-size:13px; color:#1f2937; margin-top:28px;">
+        {{#if closing}}{{closing}}{{else}}Best regards,{{/if}}
+      </div>
+      <div style="margin-top:10px; font-size:14px; font-weight:bold; color:#111;">
+        {{sender.name}}{{#if sender.title}}<br /><span style="font-weight:normal; color:#333;">{{sender.title}}</span>{{/if}}
+      </div>
     </div>
   </body>
 </html>
